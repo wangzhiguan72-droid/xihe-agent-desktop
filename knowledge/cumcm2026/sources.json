@@ -1,0 +1,131 @@
+{
+  "checked_at": "2026-11-19",
+  "official_task_page": "https://www.mcm.edu.cn/html_cn/node/27b6e148f8113f09b0269f64a02629fb.html",
+  "official_archive": {
+    "url": "https://www.mcm.edu.cn/upload_cn/CUMCM2026Problems.zip",
+    "sha256": "a54c0e6b552d31e2dbd41aba4a07769943433cb9317927514c2d39ec6442e241",
+    "bytes": 4362100
+  },
+  "papers": [
+    {
+      "id": "A133",
+      "url": "https://dxs.moe.gov.cn/zx/a/hd_sxjm_sxjmlw_2026qgdxssxjmjslwzs_2026atlw/261108/2060081.shtml",
+      "image_url": "https://univs-news-1256833609.file.myqcloud.com/123/upload/resources/image/KM40EQDDQRW0CPPKEQ2XARVWK62XQRM.jpg?watermark/1/image_key/dXBsb2FkL193YXRlcmltYWdlcy9zaXRlXzEyMy5wbmc/gravity/southeast",
+      "sha256": "8599c391eac913fed01eb435c1fec7d3f222cafb8321bfd03b95a71a57213d16",
+      "coverage": "2026-11-19 visually reviewed first page (abstract) only; no full-paper audit or result recomputation",
+      "html_sha256": "a99b96897f16b78be261bb1a3cf448b7833ab5be0fb0b65c7b7df283cebada6c"
+    },
+    {
+      "id": "A020",
+      "url": "https://dxs.moe.gov.cn/zx/a/hd_sxjm_sxjmlw_2026qgdxssxjmjslwzs_2026atlw/261108/2060080.shtml",
+      "image_url": "https://univs-news-1256833609.file.myqcloud.com/123/upload/resources/image/LA4XA2PBKE20CPPFEQ2XARVWK62XKRM.jpg?watermark/1/image_key/dXBsb2FkL193YXRlcmltYWdlcy9zaXRlXzEyMy5wbmc/gravity/southeast",
+      "sha256": "7bd12cdae45999278272de2d3a992951c471be09ec3a00b7d6e3dbe54026020d",
+      "coverage": "first displayed image (abstract) only; no full-paper audit or result recomputation",
+      "html_sha256": "9aedc3c58900b73b0cdcd41d72e5ee3cf39d7376878029ca1c94370eb35f85e8",
+      "display_id": "A20"
+    },
+    {
+      "id": "B091",
+      "url": "https://dxs.moe.gov.cn/zx/a/hd_sxjm_sxjmlw_2026qgdxssxjmjslwzs_2026btlw/261108/2060082.shtml",
+      "image_url": "https://univs-news-1256833609.file.myqcloud.com/123/upload/resources/image/K63KM3N0QNWDWPNYEQ2XARVWK62XWQ2.jpg?watermark/1/image_key/dXBsb2FkL193YXRlcmltYWdlcy9zaXRlXzEyMy5wbmc/gravity/southeast",
+      "sha256": "00d08101d9ed5cb51965c5a9fcb995d53309a8efe0d567ed93b034197fa6197c",
+      "coverage": "first displayed image (abstract) visually reviewed; no full-paper audit or result recomputation",
+      "html_sha256": "8577254100ed5e697fc51709bbcdf9e32a17a5133c970c6187cd8b57294d8da9"
+    },
+    {
+      "id": "B141",
+      "url": "https://dxs.moe.gov.cn/zx/a/hd_sxjm_sxjmlw_2026qgdxssxjmjslwzs_2026btlw/261108/2060084.shtml",
+      "image_url": "https://univs-news-1256833609.file.myqcloud.com/123/upload/resources/image/KU2XC2NYKQ5XEPNUEQ2XARVWK63DEQ2.jpg?watermark/1/image_key/dXBsb2FkL193YXRlcmltYWdlcy9zaXRlXzEyMy5wbmc/gravity/southeast",
+      "sha256": "183502477f4f1ad1585ba1637c27e578bb3bc29807af91baedbdf14fc810c581",
+      "coverage": "2026-11-19 visually reviewed first page (abstract) only; no full-paper audit or result recomputation",
+      "html_sha256": "af047e668adaf8e00eb93ef2f7b981f86f4b046fcf0167f4c523994d653a0de5"
+    },
+    {
+      "id": "B020",
+      "url": "https://dxs.moe.gov.cn/zx/a/hd_sxjm_sxjmlw_2026qgdxssxjmjslwzs_2026btlw/261111/2060186.shtml",
+      "image_url": "https://univs-news-1256833609.file.myqcloud.com/123/upload/resources/image/KVXDK2VXKQ50MPPBEQ2XARVWLE4DORU.jpg?watermark/1/image_key/dXBsb2FkL193YXRlcmltYWdlcy9zaXRlXzEyMy5wbmc/gravity/southeast",
+      "sha256": "823971df0ff2decb0199ada7639f5b3c466c8a442a2f0c8f8ea3277f27554924",
+      "coverage": "first displayed image / abstract only",
+      "html_sha256": "b7d683d9db0499de8f211bd679dd21cf60434bccc77bee059e347f9f20c2b51c"
+    },
+    {
+      "id": "C119",
+      "url": "https://dxs.moe.gov.cn/zx/a/hd_sxjm_sxjmlw_2026qgdxssxjmjslwzs_2026ctlw/261108/2060087.shtml",
+      "image_url": "https://univs-news-1256833609.file.myqcloud.com/123/upload/resources/image/LBWKORBYKNXDAPNZEQ2XARVWK63XCRA.jpg?watermark/1/image_key/dXBsb2FkL193YXRlcmltYWdlcy9zaXRlXzEyMy5wbmc/gravity/southeast",
+      "sha256": "f26bf0f9f99b843dd040b1dbe60924da6549729d868fe5f25b568efd14e35fa1",
+      "coverage": "First page (abstract) visually reviewed; 2026-11-19 pages 1-2 visually reviewed and OCR run across all 31 page images for section structure; no page-by-page audit of all content or result recomputation",
+      "html_sha256": "15ed4a05aadfdfc0bd8a80415981b912acadb7091eb644b0dcd65f4434cac990",
+      "sampled_images": [
+        {
+          "sha256": "ddc8e3cf7f8cb47bd14ca6eb039e31c239ab0b5376a15d0d96eca618d3a63bff",
+          "url": "https://univs-news-1256833609.file.myqcloud.com/123/upload/resources/image/LBWKORBYKNXDAPNZEQ2XARVWK63XCRA.jpg",
+          "paper_page": 1
+        },
+        {
+          "sha256": "c09051eb90c6d717a61d336fb430e16ee843ce63a152e0757789c349fc385ab4",
+          "url": "https://univs-news-1256833609.file.myqcloud.com/123/upload/resources/image/QE3DQQ5EKNVDOPNYEQ2XARVWK63XCRM.jpg",
+          "paper_page": 2
+        }
+      ],
+      "ocr_pages_checked": 31
+    },
+    {
+      "id": "C084",
+      "url": "https://dxs.moe.gov.cn/zx/a/hd_sxjm_sxjmlw_2026qgdxssxjmjslwzs_2026ctlw/261108/2060085.shtml",
+      "image_url": "https://univs-news-1256833609.file.myqcloud.com/123/upload/resources/image/LA5DQR3YLA2DCPNZEQ2XARVWK63DORA.jpg?watermark/1/image_key/dXBsb2FkL193YXRlcmltYWdlcy9zaXRlXzEyMy5wbmc/gravity/southeast",
+      "sha256": "dbe11100300b6202bae40508e6f83c56fedc13e4469be2e511510d92e513e5e4",
+      "coverage": "first displayed image / abstract only",
+      "html_sha256": "2bf3fca563aba7450cacd1f749832cc4c812f445c8ab2f08279c2c454c16c5fb"
+    }
+  ],
+  "limitations": [
+    "7篇均读取首张摘要图；A133、B141摘要页和C119摘要页及正文第2页另作视觉抽查。C119全部31页图另作OCR结构识别，未逐页审计公式、代码或复算结果。",
+    "原始论文图片只作临时阅读，不随内置库转载。",
+    "2026年11月20至22日讲评会截至2026-11-19尚未举行；未取得讲评。",
+    "方法路线为本库建议，不是官方评分权重。"
+  ],
+  "official_tasks": [
+    {
+      "problem": "A",
+      "pdf_pages": 4,
+      "coverage": "full task PDF read; first page visually inspected",
+      "local_archive": "audit/cumcm2026-distillation-2026-11-17/official-A.pdf",
+      "sha256": "052d8014bff5727c019b72e44fdffaf5c145ce04050dd938baaf3527db331736"
+    },
+    {
+      "problem": "B",
+      "pdf_pages": 4,
+      "coverage": "full task PDF read; first page visually inspected",
+      "local_archive": "audit/cumcm2026-distillation-2026-11-17/official-B.pdf",
+      "sha256": "81c992a9bee5376308c4768b58719b177f17d6ee1f9861577a851924c5a838ca"
+    },
+    {
+      "problem": "C",
+      "pdf_pages": 3,
+      "coverage": "full task PDF read; first page visually inspected",
+      "local_archive": "audit/cumcm2026-distillation-2026-11-17/official-C.pdf",
+      "sha256": "2c098f6ae9dd47ae965aebdec3b9facf3de6c173f999783c1012c08fc5fb9d2d"
+    }
+  ],
+  "policy_sources": [
+    {
+      "id": "ai-rule",
+      "url": "https://www.mcm.edu.cn/html_cn/node/fef94648f2836ab6cc81586f4c38512b.html",
+      "published": "2026-08-03",
+      "effective": "2026-09-01",
+      "coverage": "all seven numbered rules read"
+    },
+    {
+      "id": "review-meeting",
+      "url": "https://dxs.moe.gov.cn/zx/a/hd_sxjm_gsyw/260915/2055585.shtml",
+      "published": "2026-09-15",
+      "scheduled": "2026-11-20/2026-11-22",
+      "coverage": "meeting notice only"
+    },
+    {
+      "id": "similarity-notice",
+      "url": "https://www.mcm.edu.cn/html_cn/node/74c9193dcdfd44d026d2c3bf5f93695c.html",
+      "coverage": "HTML notice and attachment titles only; no cause inference"
+    }
+  ]
+}

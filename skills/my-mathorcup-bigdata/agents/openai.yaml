@@ -1,0 +1,4 @@
+interface:
+  display_name: "MathorCup 大数据赛"
+  short_description: "按 MathorCup 大数据赛当届规则完成数据审计、建模、独立复算与论文交付"
+  default_prompt: "使用 $my-mathorcup-bigdata 继续这道 MathorCup 大数据赛题，先核对当届规则与项目最新证据。"

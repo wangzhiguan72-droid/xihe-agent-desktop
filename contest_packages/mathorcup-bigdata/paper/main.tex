@@ -1,0 +1,54 @@
+%! TEX program = xelatex
+% 2026 MathorCup大数据竞赛初赛模板；其他届次先核官方规范。
+% 摘要第一页、目录第二页，正文从1编号；正文≤30页，附录不限。
+% 本模板是骨架，文字与人工审核须真实补齐，不能作为已完成论文提交。
+\documentclass[UTF8,a4paper,12pt]{ctexart}
+\usepackage[left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
+\usepackage{amsmath,amssymb,booktabs,longtable,graphicx,fvextra,xurl}
+\usepackage[hidelinks]{hyperref}
+\setlength{\headheight}{0pt}
+\pagestyle{empty}
+\title{论文题目（按本题实际方法与对象填写）}
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\begin{abstract}
+摘要依据实际完成的方法、计算结果和检验填写；关键数值追溯到冻结的结果键。
+\par\noindent\textbf{关键词：}按实际对象和方法填写
+\end{abstract}
+\clearpage
+\tableofcontents
+\clearpage
+\pagestyle{plain}
+\pagenumbering{arabic}
+\section{问题重述}
+逐问列任务、输入、输出、约束、单位、交付物与来源页码。
+\section{问题分析}
+说明数据可用性、跨问接口与实际可识别范围。
+\section{模型假设与符号说明}
+区分题给事实、待定解释和团队设计假设。
+\section{数据来源与预处理}
+记录血缘、时空支持、有效值、样本划分及泄漏检查。
+\section{模型建立与求解}
+按实际问题数展开；写清数学表达、求解步骤、实际答案和检验。
+\section{结果验证与独立复算}
+分开同口径数值误差、不同定义的估计量、未覆盖项及实际分歧。
+\section{模型评价与结论}
+将局部限定同步到摘要、结论和图注。
+\begin{thebibliography}{99}
+% 仅列实际查阅采用的来源和使用的AI工具，正文对应位置引用。
+\end{thebibliography}
+\section*{人工智能工具使用声明}
+% 本届要求位于参考文献后；正文对应位置标注，程序注释记录辅助编码。
+按真实使用范围填写。队员独立核心工作、采纳、人工核验和签署状态不得由代理代填。
+\appendix
+\section{支撑材料与软件环境}
+% support_pack完成后实际引入清单：
+% \input{../findings/support_manifest.tex}
+列出实际软件版本、运行命令与复现说明。
+\section{全部自编源程序}
+% 逐个引用真实完整源码，不能仅写文件名或放算法节选：
+% \VerbatimInput[breaklines=true,fontsize=\small]{../scripts/solve.py}
+\end{document}

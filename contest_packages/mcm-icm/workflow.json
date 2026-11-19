@@ -1,0 +1,11 @@
+{
+  "intro": "Use the edition-specific COMAP instructions and the actual problem statement. Draft in English. Register the current edition's submission and AI-use requirements with their sources. For the verified 2027 edition, use a one-page Summary Sheet first and count all solution, references, appendices, code and problem-specific deliverables toward 25 pages; the AI-use report belongs at the end of the same PDF and has separate page accounting. Do not infer letters or memos for unpublished problems.",
+  "phases": {
+    "baseline": "Parse the exact problem, define assumptions, units, objective and minimum feasible baseline; record which problem-specific deliverables are actually requested.",
+    "iterate": "Compare candidates under the same data and metric; keep failed experiments and state conditional conclusions.",
+    "freeze": "Freeze code, data, figures, Summary Sheet and paper; independently check calculations and the AI-use log against actual tool activity.",
+    "final": "Check the compiled English PDF, first-page Summary Sheet, counted pages, control-number headers, anonymity, AI report and any sourced problem-specific letter or memo. Have the team verify the content and citations before submission."
+  },
+  "clock": { "ratios": null },
+  "reference_routes_enabled": false
+}

@@ -1,0 +1,37 @@
+{
+  "name": "xihe-agent",
+  "version": "2.9.0",
+  "description": "羲和 Agent — 桌面端多模型数模/编程智能体运行时",
+  "main": "main.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node core/server.js --open-edge",
+    "desktop": "electron .",
+    "cli": "node cli.js",
+    "test": "node core/test_frontend_io.js && node core/test_desktop_launch.js && node core/test_sandbox.js && node core/test_evidence.js && node core/test_memory_kb.js && node core/test_model_roles.js && node core/test_model_enable.js && node core/test_decision_judge.js && node core/test_reasoning.js && node core/test_reasoning_adapters.js && node core/test_reasoning_responses.js && node core/test_reasoning_auxiliary.js && node core/test_stream_failure.js && node core/test_reasoning_vision_cache.js && node core/test_reasoning_runtime.js && node core/test_workflow_rules.js && node core/test_pool.js && node core/test_redteam.js && node core/test_deep_audit.js && node core/test_candidate_comparison.js && npm run test:plans && npm run test:plugins && npm run test:research && npm run test:optimization && npm run test:trace && npm run test:analytic && npm run test:figures && npm run test:blind && npm run test:iteration && npm run test:visual && node core/test_material_policy.js && node core/test_abstract_guidance.js && node core/test_child_evidence.js && node core/test_compact.js && node core/test_decisions.js && node core/test_role_memory.js && node core/test_handoff.js && node core/test_context_archive.js && node core/test_subagent_handoff.js && node core/test_model_spec.js && node core/test_contest_quality.js && node core/test_contest_types.js && node core/test_paper_contract.js && node core/test_paper_profile.js && node core/test_support_integrity.js && python core/test_paper_pdf_audit.py && node core/test_usage_stats.js && node core/test_usage_history.js && node core/test_render.js && npm run test:async && npm run test:focus && npm run test:mama && npm run test:contests && npm run test:mcm && npm run test:practice && npm run test:cache && npm run test:templates",
+    "test:ui": "node core/test_frontend_io.js && node core/test_usage_stats.js && node core/test_usage_history.js && node core/test_render.js",
+    "test:focus": "node core/test_task_focus.js && node core/test_task_focus_runtime.js && node core/test_task_focus_api.js",
+    "test:reasoning": "node core/test_reasoning.js && node core/test_reasoning_adapters.js && node core/test_reasoning_responses.js && node core/test_reasoning_auxiliary.js && node core/test_stream_failure.js && node core/test_reasoning_vision_cache.js && node core/test_reasoning_runtime.js",
+    "test:async": "node core/test_runtime_lock.js && node core/test_jobs_scheduler.js && node core/test_job_resume.js && node core/test_jobs_api.js",
+    "test:mama": "node core/test_contest_workflows.js && node core/test_independent_verification.js && node core/test_support_policy.js && node core/test_mama_delivery.js && node core/test_contest_api.js",
+    "test:contests": "node core/test_contest_packages.js && node core/test_contest_isolation.js && node core/test_project_contest.js",
+    "test:practice": "node core/test_result_comparison.js && node core/test_comparison_tool.js && node core/test_review_findings.js && node core/test_verification_run.js && node core/test_result_diff.js && node core/test_repro_outputs.js && node core/test_review_snapshot.js && node core/test_acceptance_state.js && node core/test_matlab_entry.js",
+    "test:cache": "node core/test_cache_diagnostics.js && node core/test_cache_transport.js && node core/test_cache_api.js && node core/test_cache_live_probe.js && node core/test_recovery_receipts.js",
+    "test:iteration": "node core/test_iteration_evidence.js && node core/test_iteration_computation.js && node core/test_iteration_analytical.js",
+    "test:visual": "node core/test_deep_visual.js && node core/test_reasoning_vision_cache.js",
+    "test:plans": "node core/test_skill_resolution.js && node core/test_skill_assessment.js && node core/test_skill_gain.js && node core/test_project_plan.js && node core/test_project_plan_api.js",
+    "test:research": "node core/test_research_benchmark.js && python core/test_research_cases.py && node core/test_research_methods.js && node core/test_builtin_knowledge.js",
+    "test:trace": "node core/test_run_artifacts.js && node core/test_claim_trace.js && node core/test_claim_trace_api.js && node core/test_claim_trace_workflow.js",
+    "test:analytic": "node core/test_analytic_trace.js && node core/test_analytic_trace_workflow.js",
+    "test:blind": "node core/test_blind_evaluation.js",
+    "test:mcm": "node core/test_mcm_policy.js",
+    "test:figures": "node core/test_figure_skill.js",
+    "test:optimization": "node core/test_optimization_evidence.js && node core/test_optimization_trace.js && node core/test_optimization_workflow.js",
+    "test:plugins": "node core/test_plugins.js && node core/test_plugin_workflow.js",
+    "test:templates": "node core/test_template_library.js && node core/test_apmcm_reference.js && node core/test_academic_mcp.js && node core/test_apmcm_package.js && node core/test_template_library_api.js"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^44.4.3"
+  }
+}

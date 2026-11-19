@@ -1,0 +1,44 @@
+% APMCM English paper starting point. Check the current edition and track rules before submission.
+% Replace all editorial guidance with verified work. The signed commitment sheet is separate.
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=2.5cm,headheight=18pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb,graphicx,booktabs,fancyhdr}
+\newcommand{\teamnumber}{ENTER\_APMCM\_TEAM\_NUMBER}
+\newcommand{\problemletter}{ENTER\_PROBLEM\_LETTER}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{Team \teamnumber}
+\fancyhead[R]{Page \thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\begin{document}
+\thispagestyle{fancy}
+\begin{center}
+  {\Large\bfseries APMCM Summary Sheet}\\[1em]
+  {\large Problem \problemletter: Enter the actual paper title}
+\end{center}
+\noindent\textbf{Team number:} \teamnumber\par\medskip
+\noindent\textbf{Summary.} Describe the completed models, the answer to each requested task, the main measured results with units, validation, and the scope of those results. Complete this page only after the computations are reproducible.\par\medskip
+\noindent\textbf{Keywords:} Enter terms specific to the problem and model.
+\clearpage
+% Add a table of contents only if it helps this paper and the current rules allow it.
+\section{Problem Restatement and Analysis}
+Specify the task, inputs, outputs, constraints, data provenance, and links between questions.
+\section{Assumptions and Notation}
+Distinguish given facts from modeling assumptions; define units and domains.
+\section{Data and Baseline}
+Describe data preparation, the comparison protocol, and the implemented baseline.
+\section{Models and Results}
+Organize subsections by the actual questions. Give equations, solution steps, numerical answers, and traceable figures or tables.
+\section{Validation, Sensitivity, and Limitations}
+Use tests suited to the model, including constraint checks, held-out comparisons, or independent calculations where applicable.
+\section{Conclusions}
+Answer the requested questions with the conditions under which the results hold.
+\begin{thebibliography}{9}
+% Add only sources actually consulted and cited in the body.
+\end{thebibliography}
+\appendix
+\section{Reproduction and Source Programs}
+% If the team wrote programs, include their complete text here and provide source files in support material.
+% Record actual commands, dependencies, input versions, and output locations.
+\end{document}

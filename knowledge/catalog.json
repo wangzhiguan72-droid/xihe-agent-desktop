@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "documents": [
+    {
+      "id": "builtin-cumcm2026-start",
+      "path": "cumcm2026/START.md",
+      "title": "2026国赛资料范围与选用",
+      "provenance": "reference",
+      "scope": "2026-11-17核对；官方题面已读，范文仅摘要页；方法是建议，非官方标准解/已实测增益",
+      "source_urls": [
+        "https://www.mcm.edu.cn/html_cn/node/27b6e148f8113f09b0269f64a02629fb.html",
+        "https://dxs.moe.gov.cn/zx/hd/sxjm/sxjmlw/2026qgdxssxjmjslwzs/"
+      ]
+    },
+    {
+      "id": "builtin-cumcm2026-a",
+      "path": "cumcm2026/a-transport.md",
+      "title": "2026 A 药材烘干 热质耦合 PDE",
+      "provenance": "advice",
+      "scope": "2026-11-17核对；官方题面已读，范文仅摘要页；方法是建议，非官方标准解/已实测增益",
+      "source_urls": [
+        "https://dxs.moe.gov.cn/zx/a/hd_sxjm_sxjmlw_2026qgdxssxjmjslwzs_2026atlw/261108/2060081.shtml",
+        "https://dxs.moe.gov.cn/zx/a/hd_sxjm_sxjmlw_2026qgdxssxjmjslwzs_2026atlw/261108/2060080.shtml"
+      ]
+    },
+    {
+      "id": "builtin-cumcm2026-b",
+      "path": "cumcm2026/b-search.md",
+      "title": "2026 B 干扰源 几何定位 覆盖搜索",
+      "provenance": "advice",
+      "scope": "2026-11-17核对；官方题面已读，范文仅摘要页；方法是建议，非官方标准解/已实测增益",
+      "source_urls": [
+        "https://dxs.moe.gov.cn/zx/a/hd_sxjm_sxjmlw_2026qgdxssxjmjslwzs_2026btlw/261108/2060082.shtml",
+        "https://dxs.moe.gov.cn/zx/a/hd_sxjm_sxjmlw_2026qgdxssxjmjslwzs_2026btlw/261108/2060084.shtml",
+        "https://dxs.moe.gov.cn/zx/a/hd_sxjm_sxjmlw_2026qgdxssxjmjslwzs_2026btlw/261111/2060186.shtml"
+      ]
+    },
+    {
+      "id": "builtin-cumcm2026-c",
+      "path": "cumcm2026/c-energy.md",
+      "title": "2026 C 微网 储能 预测与滚动优化",
+      "provenance": "advice",
+      "scope": "2026-11-17核对；官方题面已读，范文仅摘要页；方法是建议，非官方标准解/已实测增益",
+      "source_urls": [
+        "https://dxs.moe.gov.cn/zx/a/hd_sxjm_sxjmlw_2026qgdxssxjmjslwzs_2026ctlw/261108/2060087.shtml",
+        "https://dxs.moe.gov.cn/zx/a/hd_sxjm_sxjmlw_2026qgdxssxjmjslwzs_2026ctlw/261108/2060085.shtml"
+      ]
+    },
+    {
+      "id": "builtin-cumcm2026-ai",
+      "path": "cumcm2026/ai-agent.md",
+      "title": "2026 AI Agent 使用规定与训练建议",
+      "provenance": "advice",
+      "scope": "2026-11-17核对；官方题面已读，范文仅摘要页；方法是建议，非官方标准解/已实测增益",
+      "source_urls": [
+        "https://www.mcm.edu.cn/html_cn/node/fef94648f2836ab6cc81586f4c38512b.html",
+        "https://dxs.moe.gov.cn/zx/a/hd_sxjm_gsyw/260915/2055585.shtml",
+        "https://www.mcm.edu.cn/html_cn/node/74c9193dcdfd44d026d2c3bf5f93695c.html"
+      ]
+    }
+  ]
+}

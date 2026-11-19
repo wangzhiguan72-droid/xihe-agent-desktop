@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "id": "evidence-figures",
+  "version": "1.0.0",
+  "label": "证据图渲染",
+  "capabilities": ["figures.render"],
+  "engine": "guarded-python",
+  "entry": "render_evidence.py",
+  "permissions": {
+    "workspace_read": true,
+    "workspace_write": true,
+    "network": false,
+    "subprocess": false
+  },
+  "source_skill": {
+    "name": "xihe-evidence-figures",
+    "file": "scripts/render_evidence.py"
+  }
+}

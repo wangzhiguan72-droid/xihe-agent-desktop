@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "builtAt": "2026-09-22 15:36:49",
+  "roots": [
+    "bundled"
+  ],
+  "docs": [
+    {
+      "id": "d146e661c01",
+      "rel": "referenced-samples/板凳龙运动状态及路线研究.pdf",
+      "root": "bundled",
+      "size": 15730424,
+      "provenance": "exemplar",
+      "title": "基于动态搜索的“板凳龙”运动状态及路线研究",
+      "chunks": 58
+    },
+    {
+      "id": "d4f2984b58b",
+      "rel": "referenced-samples/生产决策优化-蚁群遗传蒙特卡洛.pdf",
+      "root": "bundled",
+      "size": 2171340,
+      "provenance": "exemplar",
+      "title": "基于蚁群算法与遗传算法优化的蒙特卡洛模拟在生产决策优化",
+      "chunks": 22
+    },
+    {
+      "id": "d90f8de68f7",
+      "rel": "referenced-samples/多波束测线布设.pdf",
+      "root": "bundled",
+      "size": 2334817,
+      "provenance": "exemplar",
+      "title": "多波束测线布设",
+      "chunks": 48
+    },
+    {
+      "id": "d29240f64a4",
+      "rel": "referenced-samples/蔬菜类商品动态定价与补货决策.pdf",
+      "root": "bundled",
+      "size": 2787829,
+      "provenance": "exemplar",
+      "title": "某商超蔬菜类商品动态定价与补货决策研究",
+      "chunks": 38
+    },
+    {
+      "id": "d643c8cd3e5",
+      "rel": "referenced-samples/农作物种植策略随机优化.pdf",
+      "root": "bundled",
+      "size": 1353484,
+      "provenance": "exemplar",
+      "title": "基于随机优化的农作物种植策略模型",
+      "chunks": 76
+    },
+    {
+      "id": "d26e8b11c95",
+      "rel": "referenced-samples/蔬菜定价补货-历史数据模型.pdf",
+      "root": "bundled",
+      "size": 4363000,
+      "provenance": "exemplar",
+      "title": "基于历史数据的蔬菜类商品定价与补货决策模型",
+      "chunks": 33
+    },
+    {
+      "id": "d1afd9cbe89",
+      "rel": "referenced-samples/华数杯一等奖-导电复合材料逾渗.pdf",
+      "root": "bundled",
+      "size": 2136919,
+      "provenance": "exemplar",
+      "title": "2026 年“华数杯”大学生数学建模竞赛",
+      "chunks": 27
+    },
+    {
+      "id": "d32187e3d7e",
+      "rel": "official/2026-CUMCM-评阅要点.pdf",
+      "root": "bundled",
+      "size": 508429,
+      "provenance": "reference",
+      "title": "2026 高教社杯全国大学生数学建模竞赛评阅要点",
+      "chunks": 8
+    },
+    {
+      "id": "dcfc55b3e12",
+      "rel": "guides/2026国赛建议.docx",
+      "root": "bundled",
+      "size": 6471285,
+      "provenance": "advice",
+      "title": "2026国赛A题 十个创新点分享",
+      "chunks": 20
+    },
+    {
+      "id": "d06e566df8a",
+      "rel": "guides/AI特征词参考.docx",
+      "root": "bundled",
+      "size": 10709,
+      "provenance": "advice",
+      "title": "中文论文高频AI特征词",
+      "chunks": 2
+    },
+    {
+      "id": "d76ad68ddf5",
+      "rel": "official/AI工具使用规定.pdf",
+      "root": "bundled",
+      "size": 97121,
+      "provenance": "advice",
+      "title": "全国大学生数学建模竞赛人工智能工具使用规定",
+      "chunks": 2
+    },
+    {
+      "id": "d89a29521fb",
+      "rel": "official/参赛规则.pdf",
+      "root": "bundled",
+      "size": 123600,
+      "provenance": "advice",
+      "title": "全国大学生数学建模竞赛参赛规则",
+      "chunks": 3
+    }
+  ],
+  "errors": [],
+  "note": "发行版仅保留官方规则、公开建议与公开范文索引；个人旧稿、自动生成稿、付费与内部资料未随包。范文文本仅供检索参考，不证明奖级，也不代表当前题结论。"
+}

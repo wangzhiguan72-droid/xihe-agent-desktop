@@ -1,0 +1,64 @@
+{
+  "sources": [
+    {
+      "id": "2026-preliminary-user-provided",
+      "type": "official",
+      "description": "用户提供的2026妈妈杯大数据初赛官方格式/AI条款；使用时仍需登记当届原始来源",
+      "path": "source-2026.md"
+    }
+  ],
+  "require_confirmation": true,
+  "required_fields": [
+    "source",
+    "profile",
+    "max_body_pages",
+    "appendix_code_required",
+    "ai_statement_in_body",
+    "ai_statement_position"
+  ],
+  "paper_quality_profile": null,
+  "defaults": {
+    "support_policy": {
+      "max_bytes": null
+    }
+  },
+  "paper": {
+    "toc_required": true,
+    "support_manifest_required": true,
+    "appendix_heading_titles": [
+      "附录",
+      "支撑材料与软件环境",
+      "全部自编源程序"
+    ],
+    "ai_details": {
+      "title": "AI 工具使用详情说明",
+      "filename": "AI工具使用详情说明.pdf",
+      "draft_only": true,
+      "required": true
+    },
+    "abstract_first_page": true,
+    "toc_second_page": true,
+    "body_numbering_start": 1,
+    "header_required": false
+  },
+  "profiles": {
+    "mathorcup-bigdata-2026-preliminary": {
+      "edition": "2026",
+      "stage": "preliminary",
+      "constraints": {
+        "max_body_pages": 30,
+        "appendix_code_required": true,
+        "ai_statement_in_body": true,
+        "ai_statement_position": "after_references"
+      },
+      "required_fields": [
+        "source",
+        "profile",
+        "max_body_pages",
+        "appendix_code_required",
+        "ai_statement_in_body",
+        "ai_statement_position"
+      ]
+    }
+  }
+}

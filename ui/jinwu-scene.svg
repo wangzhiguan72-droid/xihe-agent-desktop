@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" id="jinwuMotionScene" class="jinwu-scene" viewBox="0 0 960 540" overflow="visible" role="img" aria-labelledby="title desc">
+  <title id="title">金乌自扶桑振翅而起</title>
+  <desc id="desc">汤谷扶桑，九日居下枝，一日居上枝。日金焰羽的三足神乌立于扶桑，振翅而起，飞入日中</desc>
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#0e1326"/><stop offset=".42" stop-color="#3a2340"/><stop offset=".76" stop-color="#b0533a"/><stop offset="1" stop-color="#f0a64c"/></linearGradient>
+    <radialGradient id="sunGlow"><stop stop-color="#fff6d2" stop-opacity=".95"/><stop offset=".2" stop-color="#ffd98a" stop-opacity=".55"/><stop offset=".55" stop-color="#f29a45" stop-opacity=".2"/><stop offset="1" stop-color="#e0703a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="sunDisk"><stop offset=".7" stop-color="#fffaf0"/><stop offset=".92" stop-color="#ffe7a8"/><stop offset="1" stop-color="#ffc874" stop-opacity="0"/></radialGradient>
+    <linearGradient id="wood" x1="0" y1="0" x2=".3" y2="1"><stop stop-color="#c9773c"/><stop offset=".35" stop-color="#7a3f2a"/><stop offset=".8" stop-color="#2e1a1e"/><stop offset="1" stop-color="#160f14"/></linearGradient>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#3d6a4f"/><stop offset=".6" stop-color="#1c3330"/><stop offset="1" stop-color="#0f1c1d"/></linearGradient>
+    <radialGradient id="bloom"><stop stop-color="#fff1a0"/><stop offset=".25" stop-color="#ff7a2a"/><stop offset=".7" stop-color="#d0191f"/><stop offset="1" stop-color="#7a0b16"/></radialGradient>
+    <radialGradient id="miniSun"><stop stop-color="#fff6c8"/><stop offset=".45" stop-color="#ffc04a" stop-opacity=".8"/><stop offset="1" stop-color="#ff8a2a" stop-opacity="0"/></radialGradient>
+    <linearGradient id="cloud" x2="0" y2="1"><stop stop-color="#f1c48e" stop-opacity=".55"/><stop offset="1" stop-color="#8a5a52" stop-opacity="0"/></linearGradient>
+    <linearGradient id="torsoGrad" x1="0" y1="0" x2="1" y2=".4"><stop stop-color="#b8561a"/><stop offset=".4" stop-color="#f2a632"/><stop offset=".8" stop-color="#ffd770"/><stop offset="1" stop-color="#fff0b0"/></linearGradient>
+    <linearGradient id="chestGrad" x1="0" y1="0" x2=".3" y2="1"><stop stop-color="#fffaf0"/><stop offset=".6" stop-color="#ffe2b0"/><stop offset="1" stop-color="#ffab5c"/></linearGradient>
+    <linearGradient id="headGrad" x1="0" y1="0" x2=".2" y2="1"><stop stop-color="#fffbe0"/><stop offset=".35" stop-color="#ffe27a"/><stop offset=".75" stop-color="#f5b03a"/><stop offset="1" stop-color="#d06a1a"/></linearGradient>
+    <linearGradient id="beakGrad" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0a8"/><stop offset=".5" stop-color="#f2b640"/><stop offset="1" stop-color="#a8641a"/></linearGradient>
+    <radialGradient id="iris"><stop stop-color="#fffbe0"/><stop offset=".4" stop-color="#ffd23a"/><stop offset=".8" stop-color="#ff7a10"/><stop offset="1" stop-color="#8a2a08"/></radialGradient>
+    <radialGradient id="orb"><stop stop-color="#fffbe6"/><stop offset=".3" stop-color="#ffe066"/><stop offset=".65" stop-color="#ff7a1a" stop-opacity=".85"/><stop offset="1" stop-color="#e0301a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="ember"><stop stop-color="#fff6c0"/><stop offset=".4" stop-color="#ffb02e"/><stop offset="1" stop-color="#ff5a14" stop-opacity="0"/></radialGradient>
+    <radialGradient id="flameWing" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="220"><stop stop-color="#b02a12"/><stop offset=".3" stop-color="#e8501c"/><stop offset=".5" stop-color="#ff8a24"/><stop offset=".7" stop-color="#ffc040"/><stop offset=".88" stop-color="#ffe88a"/><stop offset="1" stop-color="#fffdf0"/></radialGradient>
+    <radialGradient id="flameTail" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="150"><stop stop-color="#d84a18"/><stop offset=".35" stop-color="#ff8a24"/><stop offset=".7" stop-color="#ffc844"/><stop offset="1" stop-color="#fff4c0"/></radialGradient>
+    <radialGradient id="flameRibbon" gradientUnits="userSpaceOnUse" cx="-74" cy="26" r="320"><stop stop-color="#fff0a0"/><stop offset=".25" stop-color="#ffc23a"/><stop offset=".6" stop-color="#f07a1e"/><stop offset=".85" stop-color="#c8401a"/><stop offset="1" stop-color="#ffb04a"/></radialGradient>
+    <radialGradient id="flameDeep" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="230"><stop stop-color="#3a0610"/><stop offset=".3" stop-color="#6e0e16"/><stop offset=".6" stop-color="#a01c1a"/><stop offset=".85" stop-color="#c8401e"/><stop offset="1" stop-color="#e06a2a"/></radialGradient>
+    <radialGradient id="covertMid" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="170"><stop stop-color="#8a1216"/><stop offset=".45" stop-color="#c8281c"/><stop offset="1" stop-color="#f05a24"/></radialGradient>
+    <radialGradient id="covertGold" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="170"><stop stop-color="#e8901e"/><stop offset=".5" stop-color="#ffbc2e"/><stop offset="1" stop-color="#ffdc60"/></radialGradient>
+    <radialGradient id="covertPale" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="170"><stop stop-color="#fff0c0"/><stop offset=".6" stop-color="#fff8e0"/><stop offset="1" stop-color="#ffffff"/></radialGradient>
+    <linearGradient id="scaleGrad" x1="1" y1="0" x2="0" y2="0"><stop stop-color="#e8892a"/><stop offset=".55" stop-color="#ffc24e"/><stop offset="1" stop-color="#fff0b8"/></linearGradient>
+    <clipPath id="torsoClip"><path d="M40-38C58-20 60 15 38 40 20 58-20 58-45 45-60 38-75 30-84 24-62 8-36-18-10-30 5-38 25-44 40-38Z"/></clipPath>
+    <linearGradient id="streamer" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#7d8cff"/><stop offset=".6" stop-color="#3a56d8"/><stop offset="1" stop-color="#9a5cff" stop-opacity=".3"/></linearGradient>
+    <radialGradient id="auraGlow"><stop stop-color="#fffbe6" stop-opacity=".95"/><stop offset=".22" stop-color="#ffe27a" stop-opacity=".7"/><stop offset=".5" stop-color="#ffa53a" stop-opacity=".32"/><stop offset="1" stop-color="#ff6a1a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="ray" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="250"><stop offset=".38" stop-color="#fff8d0" stop-opacity=".95"/><stop offset=".6" stop-color="#ffcf55" stop-opacity=".7"/><stop offset="1" stop-color="#ff8a2a" stop-opacity="0"/></radialGradient>
+    <radialGradient id="vig" cx=".5" cy=".47" r=".6"><stop offset=".64" stop-color="#fff"/><stop offset="1" stop-color="#000"/></radialGradient>
+    <mask id="fadeEdges" maskUnits="userSpaceOnUse" x="0" y="0" width="960" height="540"><rect width="960" height="540" fill="url(#vig)"/></mask>
+    <filter id="birdGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="7" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="1 0 0 0 .25  0 .55 0 0 .06  0 0 .15 0 0  0 0 0 .75 0" result="glow"/>
+      <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="soft"><feGaussianBlur stdDeviation="10"/></filter>
+  </defs>
+  <style>
+    .jinwu-scene .rays{transform-origin:700px 165px;animation:xh-rays 5.3s ease-out both}
+    .jinwu-scene .sun-glow{transform-origin:700px 165px;animation:xh-sun 5.3s ease-in-out both}
+    .jinwu-scene .cloud-far{animation:xh-cloud-far 5.3s ease-out both}
+    .jinwu-scene .cloud-near{animation:xh-cloud-near 5.3s ease-out both}
+    .jinwu-scene .leaves{transform-origin:150px 300px;animation:xh-leaves 5.3s ease-in-out both}
+    @keyframes xh-rays{0%{opacity:0;transform:rotate(-6deg) scale(.7)}60%{opacity:.5}100%{opacity:.75;transform:rotate(4deg) scale(1.05)}}
+    @keyframes xh-sun{0%{opacity:.55;transform:scale(.8)}100%{opacity:1;transform:scale(1.12)}}
+    @keyframes xh-cloud-far{from{transform:translateX(-24px);opacity:.3}to{transform:translateX(14px);opacity:1}}
+    @keyframes xh-cloud-near{from{transform:translateX(36px);opacity:.3}to{transform:translateX(-30px);opacity:1}}
+    @keyframes xh-leaves{0%,100%{transform:rotate(0)}30%{transform:rotate(-1.2deg)}65%{transform:rotate(1deg)}}
+    @media(prefers-reduced-motion:reduce){.jinwu-scene *{animation:none!important}}
+  </style>
+  <g mask="url(#fadeEdges)">
+    <rect width="960" height="540" fill="url(#sky)"/>
+    <circle class="sun-glow" cx="700" cy="165" r="280" fill="url(#sunGlow)"/>
+    <g class="rays" stroke="#ffe6b0" stroke-opacity=".28" stroke-linecap="round">
+      <path d="M700 40V-10M700 290v50M575 165h-50M825 165h50M612 77l-36-36M788 253l36 36M612 253l-36 36M788 77l36-36" stroke-width="3"/>
+      <path d="M652 50l-14-40M748 280l14 40M585 213l-40 16M815 117l40-16M748 50l14-40M652 280l-14 40M585 117l-40-16M815 213l40 16" stroke-width="1.5"/>
+    </g>
+    <circle cx="700" cy="165" r="80" fill="url(#sunDisk)"/>
+    <g class="sun-clouds" fill="none" stroke="#ffd98a" stroke-opacity=".55" stroke-width="2.4" stroke-linecap="round">
+      <path d="M560 236c18-16 46-14 54 4 6 14-6 26-19 22-11-3-11-17 0-18"/><path d="M614 248c22 4 44-2 56-16"/>
+      <path d="M842 104c-18 14-44 12-52-6-6-14 6-26 19-22 11 3 11 17 0 18"/><path d="M790 92c-22-4-42 2-54 14"/>
+      <path d="M816 250c16 12 40 10 46-6 4-12-6-22-17-18-9 3-9 15 0 15"/><path d="M584 96c-16-12-38-10-44 6-4 12 6 22 17 18 9-3 9-15 0-15"/>
+    </g>
+    <path d="M0 372 96 300l70 40 84-92 78 78 86-62 76 70 92-58 70 44 94-80 84 62 82-34 78 58v162H0Z" fill="#3a2032" opacity=".78"/>
+    <path d="M0 420 90 360l84 40 132-78 70 60 118-70 110 88 98-58 90 64 102-62 66 46v150H0Z" fill="#2a1726" opacity=".92"/>
+    <g class="cloud-far"><path d="M0 382c70-28 130-14 188-6 58 8 100-22 162-10 64 12 118 20 178-6 66-28 138-6 192 10 76 22 156 0 240-10v90H0Z" fill="url(#cloud)" opacity=".7"/></g>
+  </g>
+  <g id="fusang">
+    <path d="M36 540C52 478 62 440 104 410 148 380 210 386 272 390 342 394 402 400 470 402 522 403 566 396 612 380 600 398 572 412 534 416 486 420 420 420 352 418 292 416 238 414 196 424 150 434 122 470 112 540Z" fill="url(#wood)" stroke="#e39a52" stroke-opacity=".5" stroke-width="2"/>
+    <path d="M110 426C70 380 62 320 92 262 106 236 128 220 152 212 136 240 130 268 136 300 142 340 154 374 176 400Z" fill="url(#wood)" stroke="#e39a52" stroke-opacity=".45" stroke-width="2"/>
+    <path d="M128 410c60-12 140-6 210 0 60 5 116 6 170 2M120 470c18-30 50-46 96-50M102 380c-16-40-14-84 8-118" fill="none" stroke="#ffcf8a" stroke-opacity=".45" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M300 392c-10-26-4-50 18-72M330 418c4 20 18 34 40 42M560 400c18-18 40-26 66-26" fill="none" stroke="#5a2f24" stroke-width="7" stroke-linecap="round"/>
+    <g class="leaves">
+      <g fill="url(#leaf)" stroke="#d9a35a" stroke-opacity=".55" stroke-width="1.2">
+        <ellipse cx="84" cy="250" rx="42" ry="15" transform="rotate(-30 84 250)"/><ellipse cx="134" cy="206" rx="40" ry="14" transform="rotate(-62 134 206)"/>
+        <ellipse cx="178" cy="226" rx="36" ry="13" transform="rotate(-10 178 226)"/><ellipse cx="58" cy="300" rx="34" ry="12" transform="rotate(20 58 300)"/>
+        <ellipse cx="208" cy="262" rx="30" ry="11" transform="rotate(16 208 262)"/><ellipse cx="318" cy="314" rx="28" ry="10" transform="rotate(-44 318 314)"/>
+        <ellipse cx="344" cy="330" rx="24" ry="9" transform="rotate(10 344 330)"/><ellipse cx="630" cy="368" rx="26" ry="9" transform="rotate(-18 630 368)"/>
+        <ellipse cx="380" cy="458" rx="26" ry="9" transform="rotate(24 380 458)"/>
+      </g>
+      <g fill="url(#bloom)" stroke="#ffcf7a" stroke-opacity=".5" stroke-width="1">
+        <path d="M120 236c-10-12-4-26 10-24 2-14 18-16 22-4 14-4 22 10 12 20 10 10 0 24-12 18-4 14-20 12-22-2-14 2-20-12-10-8Z"/>
+        <path d="M196 238c-8-9-3-20 8-18 2-11 14-12 17-3 11-3 17 8 9 15 8 8 0 18-9 14-3 11-16 9-17-2-11 2-15-9-8-6Z"/>
+        <path d="M330 300c-7-8-2-17 7-15 1-9 12-10 14-2 9-3 14 6 7 12 7 7 0 15-7 11-3 9-13 8-14-1-9 1-13-7-7-5Z"/>
+      </g>
+      <g fill="#fff3b8"><circle cx="133" cy="226" r="2.6"/><circle cx="206" cy="231" r="2"/><circle cx="338" cy="294" r="1.8"/></g>
+      <g class="nine-suns"><circle cx="96" cy="216" r="12" fill="url(#miniSun)"/><circle cx="232" cy="210" r="9" fill="url(#miniSun)"/><circle cx="60" cy="268" r="8" fill="url(#miniSun)"/><circle cx="150" cy="186" r="10" fill="url(#miniSun)"/><circle cx="186" cy="262" r="8" fill="url(#miniSun)"/><circle cx="300" cy="296" r="9" fill="url(#miniSun)"/><circle cx="356" cy="318" r="7" fill="url(#miniSun)"/><circle cx="616" cy="352" r="9" fill="url(#miniSun)"/><circle cx="28" cy="318" r="7" fill="url(#miniSun)"/></g>
+    </g>
+    <ellipse class="perch-shadow" cx="472" cy="404" rx="56" ry="8" fill="#ffb347" opacity=".45" filter="url(#soft)"/>
+  </g>
+  <g class="cloud-near"><path d="M0 470c112-34 172 14 262-12 76-24 128-10 180 4 84 20 146-20 216-12 100 12 158 14 302-16v106H0Z" fill="url(#cloud)" opacity=".62"/><path d="M0 506c88-22 184 6 292-18 102-22 192 4 284-8 120-18 256 8 384-16" fill="none" stroke="#ffe0b8" stroke-opacity=".28" stroke-width="3"/></g>
+  <g class="embers"></g>
+  <g class="sun-flare" opacity="0"><circle cx="700" cy="165" r="120" fill="url(#auraGlow)"/></g>
+  <g transform="translate(470 318) scale(.86)">
+    <g class="bird-aura" style="mix-blend-mode:screen">
+      <circle class="aura-glow" cx="10" cy="-20" r="190" fill="url(#auraGlow)"/>
+      <g class="aura-rays" transform="translate(10 -20)"></g>
+      <circle class="aura-ring" cx="10" cy="-20" r="96" fill="none" stroke="#fff1b8" stroke-width="2.2" stroke-opacity=".55"/>
+      <circle class="aura-ring2" cx="10" cy="-20" r="118" fill="none" stroke="#ffd070" stroke-width="1" stroke-dasharray="3 9" stroke-opacity=".5"/>
+    </g>
+    <g class="bird-flight" filter="url(#birdGlow)">
+      <g class="tail-ribbons"></g>
+      <g class="cords"></g>
+      <g transform="translate(-22 -36)"><g class="wing-left"></g></g>
+      <g transform="translate(-74 26)"><g class="tail"></g></g>
+      <g class="talons"></g>
+      <g class="bird-torso">
+        <path class="torso-shape" d="M40-38C58-20 60 15 38 40 20 58-20 58-45 45-60 38-75 30-84 24-62 8-36-18-10-30 5-38 25-44 40-38Z" fill="url(#torsoGrad)" stroke="#ffb04a" stroke-opacity=".6" stroke-width="1.5"/>
+        <g class="body-scales" clip-path="url(#torsoClip)"></g>
+        <path d="M40-36C56-18 58 12 38 36 28 46 18 48 8 44 26 26 30 0 24-26Z" fill="url(#chestGrad)"/>
+        <path d="M30-14c4 3 9 3 13 0m-15 12c4 3 9 3 13 0m-17 13c4 3 9 3 12 0m-18 12c4 3 8 3 11 0" fill="none" stroke="#f0a560" stroke-opacity=".7" stroke-width="1.3" stroke-linecap="round"/>
+        <path d="M-14 46c4 10 12 14 20 12m2-14c4 10 12 12 18 8" fill="none" stroke="#ff8a2a" stroke-width="5" stroke-linecap="round" opacity=".85"/>
+      </g>
+      <g class="bird-head">
+        <g class="streamers"></g>
+        <g class="hackles"></g>
+        <g class="crest"></g>
+        <path class="head-shape" d="M16-30C14-58 26-86 52-94 70-99 88-94 96-82 100-75 98-68 92-63 80-56 66-52 58-40 52-30 48-20 46-10Z" fill="url(#headGrad)" stroke="#ffd27a" stroke-opacity=".7" stroke-width="1.5"/>
+        <path class="head-shape" d="M92-63C80-56 66-50 58-38 54-30 50-20 48-12 60-24 72-40 90-54Z" fill="#fff4dc"/>
+        <path class="head-shape" d="M24-44c6-10 14-16 24-18m-26 32c6-10 12-14 22-16" fill="none" stroke="#ffe08a" stroke-opacity=".6" stroke-width="1.4" stroke-linecap="round"/>
+        <path class="head-shape" d="M94-82C106-85 119-80 127-71 129-67 127-62 123-61 120-66 114-70 104-71L94-70Z" fill="url(#beakGrad)" stroke="#8a4a10" stroke-width="1"/>
+        <path class="head-shape" d="M95-70 112-69C107-64 100-62 94-64Z" fill="#c98a28" stroke="#8a4a10" stroke-width=".8"/>
+        <path class="head-shape" d="M73-79C64-77 56-73 48-66" fill="none" stroke="#8a0f1e" stroke-width="2.6" stroke-linecap="round"/>
+        <path class="head-shape" d="M66-86C74-93 88-94 99-86L92-83C84-88 74-88 66-86Z" fill="#7a0c16"/>
+        <g class="bird-eye">
+          <path class="eye-shape" d="M72-80C76-86 86-86 91-81 86-77 77-76 72-80Z" fill="#1c0a2c"/>
+          <circle class="eye-shape" cx="82" cy="-81" r="3.4" fill="url(#iris)"/>
+          <circle class="eye-shape" cx="82.3" cy="-81" r="1.4" fill="#0d0418"/>
+          <circle class="eye-shape" cx="83.4" cy="-82.2" r=".9" fill="#fff"/>
+        </g>
+        <path class="head-shape" d="M68-85C76-91 88-91 97-85" fill="none" stroke="#fff3b8" stroke-width="2" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(4 -26)"><g class="wing-right"></g></g>
+    </g>
+  </g>
+</svg>

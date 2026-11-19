@@ -1,0 +1,45 @@
+{
+  "sources": [
+    {
+      "id": "comap-2027-instructions",
+      "type": "official",
+      "description": "COMAP 2027 MCM/ICM Instructions, sections III, IV, VI: English single-PDF submission, first-page Summary Sheet, 25 counted pages, anonymity and control-number headers, 25 MB size limit; actual problem-specific requirements remain unknown until the problem is published.",
+      "url": "https://www.contest.comap.com/undergraduate/contests/mcm/instructions.php"
+    },
+    {
+      "id": "comap-ai-policy-v102025",
+      "type": "official",
+      "description": "COMAP Contest AI Policy v102025, page 2: report on AI use in the same PDF after the solution, plus citations and accurate records; AI translation and code completion also require disclosure.",
+      "url": "https://www.contest.comap.com/undergraduate/contests/mcm/flyer/Contest_AI_Policy.pdf"
+    }
+  ],
+  "require_confirmation": true,
+  "required_fields": ["source", "profile"],
+  "paper_quality_profile": null,
+  "defaults": { "support_policy": { "max_bytes": null } },
+  "paper": {
+    "mcm_layout": true,
+    "abstract_first_page": false,
+    "toc_required": false,
+    "support_manifest_required": false,
+    "appendix_heading_titles": [],
+    "ai_details": {
+      "title": "Report on Use of AI Tools (internal draft)",
+      "filename": "AI-use-internal-draft.pdf",
+      "draft_only": true,
+      "required": false
+    }
+  },
+  "quality": {},
+  "profiles": {
+    "mcm-icm-2027": {
+      "edition": "2027",
+      "stage": "contest",
+      "constraints": {
+        "max_body_pages": 25,
+        "max_file_bytes": 24999999
+      },
+      "required_fields": ["source", "profile", "max_body_pages", "max_file_bytes"]
+    }
+  }
+}

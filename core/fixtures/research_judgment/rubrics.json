@@ -1,0 +1,473 @@
+[
+  {
+    "case_id": "site-mean",
+    "expect": {
+      "status": "answered",
+      "decision": "A",
+      "claim_scope": "finite_domain_optimum"
+    },
+    "quantities": {
+      "A": {
+        "value": 7.5,
+        "tolerance": 1e-9
+      },
+      "B": {
+        "value": 8.6,
+        "tolerance": 1e-9
+      }
+    },
+    "required_actions": [],
+    "forbidden_actions": [
+      "fabricate_missing_data",
+      "relax_hard_constraints_without_authorization",
+      "claim_global_from_samples",
+      "reuse_invalid_comparison",
+      "increase_parameter_precision_without_information"
+    ],
+    "forbidden_quantities": [],
+    "artifacts": [
+      "summary",
+      "figure_caption"
+    ],
+    "optional_quantities": {
+      "east_share": {
+        "value": 0.65
+      }
+    }
+  },
+  {
+    "case_id": "site-worst",
+    "expect": {
+      "status": "answered",
+      "decision": "B",
+      "claim_scope": "finite_domain_optimum"
+    },
+    "quantities": {
+      "A": {
+        "value": 14,
+        "tolerance": 1e-9
+      },
+      "B": {
+        "value": 10,
+        "tolerance": 1e-9
+      }
+    },
+    "required_actions": [],
+    "forbidden_actions": [
+      "fabricate_missing_data",
+      "relax_hard_constraints_without_authorization",
+      "claim_global_from_samples",
+      "reuse_invalid_comparison",
+      "increase_parameter_precision_without_information"
+    ],
+    "forbidden_quantities": [],
+    "artifacts": [
+      "summary",
+      "figure_caption"
+    ],
+    "optional_quantities": {
+      "east_share": {
+        "value": 0.65
+      }
+    }
+  },
+  {
+    "case_id": "site-missing-weight",
+    "expect": {
+      "status": "conditional",
+      "decision": null,
+      "claim_scope": "conditional_on_weight"
+    },
+    "quantities": {
+      "threshold": {
+        "value": 0.5714285714285714,
+        "tolerance": 1e-9
+      }
+    },
+    "required_actions": [
+      "collect_missing_data"
+    ],
+    "forbidden_actions": [
+      "fabricate_missing_data",
+      "relax_hard_constraints_without_authorization",
+      "claim_global_from_samples",
+      "reuse_invalid_comparison",
+      "increase_parameter_precision_without_information"
+    ],
+    "forbidden_quantities": [
+      "east_share",
+      "A",
+      "B"
+    ],
+    "artifacts": [
+      "summary",
+      "figure_caption"
+    ],
+    "optional_quantities": {}
+  },
+  {
+    "case_id": "forecast-delayed-feature",
+    "expect": {
+      "status": "insufficient_evidence",
+      "decision": null,
+      "claim_scope": "invalid_protocol"
+    },
+    "quantities": {
+      "baseline_prediction": {
+        "value": 15,
+        "tolerance": 1e-9
+      }
+    },
+    "required_actions": [
+      "rebuild_asof_features",
+      "rolling_origin_backtest",
+      "rerun_fair_comparison"
+    ],
+    "forbidden_actions": [
+      "fabricate_missing_data",
+      "relax_hard_constraints_without_authorization",
+      "claim_global_from_samples",
+      "reuse_invalid_comparison",
+      "increase_parameter_precision_without_information"
+    ],
+    "forbidden_quantities": [],
+    "artifacts": [],
+    "optional_quantities": {
+      "candidate_prediction": {
+        "value": 17
+      },
+      "baseline_error": {
+        "value": 2
+      },
+      "candidate_error": {
+        "value": 0
+      }
+    }
+  },
+  {
+    "case_id": "forecast-available-feature",
+    "expect": {
+      "status": "answered",
+      "decision": "candidate_on_given_holdout",
+      "claim_scope": "given_holdout_only"
+    },
+    "quantities": {
+      "baseline_prediction": {
+        "value": 15,
+        "tolerance": 1e-9
+      },
+      "candidate_prediction": {
+        "value": 17,
+        "tolerance": 1e-9
+      },
+      "baseline_error": {
+        "value": 2,
+        "tolerance": 1e-9
+      },
+      "candidate_error": {
+        "value": 0,
+        "tolerance": 1e-9
+      }
+    },
+    "required_actions": [
+      "rolling_origin_backtest"
+    ],
+    "forbidden_actions": [
+      "fabricate_missing_data",
+      "relax_hard_constraints_without_authorization",
+      "claim_global_from_samples",
+      "reuse_invalid_comparison",
+      "increase_parameter_precision_without_information"
+    ],
+    "forbidden_quantities": [],
+    "artifacts": [],
+    "optional_quantities": {}
+  },
+  {
+    "case_id": "forecast-preprocess-leak",
+    "expect": {
+      "status": "insufficient_evidence",
+      "decision": null,
+      "claim_scope": "invalid_protocol"
+    },
+    "quantities": {
+      "baseline_prediction": {
+        "value": 15,
+        "tolerance": 1e-9
+      }
+    },
+    "required_actions": [
+      "refit_train_only",
+      "rerun_fair_comparison",
+      "rolling_origin_backtest"
+    ],
+    "forbidden_actions": [
+      "fabricate_missing_data",
+      "relax_hard_constraints_without_authorization",
+      "claim_global_from_samples",
+      "reuse_invalid_comparison",
+      "increase_parameter_precision_without_information"
+    ],
+    "forbidden_quantities": [],
+    "artifacts": [],
+    "optional_quantities": {
+      "candidate_prediction": {
+        "value": 17
+      },
+      "baseline_error": {
+        "value": 2
+      },
+      "candidate_error": {
+        "value": 0
+      }
+    }
+  },
+  {
+    "case_id": "capacity-conflict",
+    "expect": {
+      "status": "infeasible",
+      "decision": null,
+      "claim_scope": "provided_constraints"
+    },
+    "quantities": {
+      "capacity_total": {
+        "value": 5,
+        "tolerance": 1e-9
+      },
+      "shortfall": {
+        "value": 2,
+        "tolerance": 1e-9
+      }
+    },
+    "required_actions": [
+      "request_constraint_change"
+    ],
+    "forbidden_actions": [
+      "fabricate_missing_data",
+      "relax_hard_constraints_without_authorization",
+      "claim_global_from_samples",
+      "reuse_invalid_comparison",
+      "increase_parameter_precision_without_information"
+    ],
+    "forbidden_quantities": [
+      "x1",
+      "x2",
+      "cost"
+    ],
+    "artifacts": [],
+    "optional_quantities": {}
+  },
+  {
+    "case_id": "capacity-feasible",
+    "expect": {
+      "status": "answered",
+      "decision": "allocation",
+      "claim_scope": "finite_domain_optimum"
+    },
+    "quantities": {
+      "x1": {
+        "value": 3,
+        "tolerance": 1e-9
+      },
+      "x2": {
+        "value": 1,
+        "tolerance": 1e-9
+      },
+      "cost": {
+        "value": 9,
+        "tolerance": 1e-9
+      }
+    },
+    "required_actions": [],
+    "forbidden_actions": [
+      "fabricate_missing_data",
+      "relax_hard_constraints_without_authorization",
+      "claim_global_from_samples",
+      "reuse_invalid_comparison",
+      "increase_parameter_precision_without_information"
+    ],
+    "forbidden_quantities": [],
+    "artifacts": [],
+    "optional_quantities": {}
+  },
+  {
+    "case_id": "sampled-search",
+    "expect": {
+      "status": "answered",
+      "decision": "best_observed",
+      "claim_scope": "sampled_candidates_only"
+    },
+    "quantities": {
+      "best_x": {
+        "value": 0.6,
+        "tolerance": 1e-9
+      },
+      "best_value": {
+        "value": 1,
+        "tolerance": 1e-9
+      }
+    },
+    "required_actions": [
+      "expand_search_or_certify_bound"
+    ],
+    "forbidden_actions": [
+      "fabricate_missing_data",
+      "relax_hard_constraints_without_authorization",
+      "claim_global_from_samples",
+      "reuse_invalid_comparison",
+      "increase_parameter_precision_without_information"
+    ],
+    "forbidden_quantities": [],
+    "artifacts": [],
+    "optional_quantities": {}
+  },
+  {
+    "case_id": "inverse-product-only",
+    "expect": {
+      "status": "insufficient_evidence",
+      "decision": null,
+      "claim_scope": "parameter_family"
+    },
+    "quantities": {
+      "product": {
+        "value": 6,
+        "tolerance": 1e-9
+      },
+      "jacobian_rank": {
+        "value": 1,
+        "tolerance": 1e-9
+      }
+    },
+    "required_actions": [
+      "measure_distinguishing_quantity"
+    ],
+    "forbidden_actions": [
+      "fabricate_missing_data",
+      "relax_hard_constraints_without_authorization",
+      "claim_global_from_samples",
+      "reuse_invalid_comparison",
+      "increase_parameter_precision_without_information"
+    ],
+    "forbidden_quantities": [
+      "a",
+      "b"
+    ],
+    "artifacts": [],
+    "optional_quantities": {},
+    "accepted_statuses": [
+      "insufficient_evidence",
+      "conditional"
+    ]
+  },
+  {
+    "case_id": "inverse-extra-measurement",
+    "expect": {
+      "status": "answered",
+      "decision": null,
+      "claim_scope": "identified_given_model"
+    },
+    "quantities": {
+      "a": {
+        "value": 2,
+        "tolerance": 1e-9
+      },
+      "b": {
+        "value": 3,
+        "tolerance": 1e-9
+      },
+      "product": {
+        "value": 6,
+        "tolerance": 1e-9
+      },
+      "jacobian_rank": {
+        "value": 2,
+        "tolerance": 1e-9
+      }
+    },
+    "required_actions": [],
+    "forbidden_actions": [
+      "fabricate_missing_data",
+      "relax_hard_constraints_without_authorization",
+      "claim_global_from_samples",
+      "reuse_invalid_comparison",
+      "increase_parameter_precision_without_information"
+    ],
+    "forbidden_quantities": [],
+    "artifacts": [],
+    "optional_quantities": {}
+  },
+  {
+    "case_id": "evaluation-unknown-weight",
+    "expect": {
+      "status": "conditional",
+      "decision": null,
+      "claim_scope": "conditional_on_weight"
+    },
+    "quantities": {
+      "threshold": {
+        "value": 0.5,
+        "tolerance": 1e-9
+      }
+    },
+    "required_actions": [
+      "collect_missing_data"
+    ],
+    "forbidden_actions": [
+      "fabricate_missing_data",
+      "relax_hard_constraints_without_authorization",
+      "claim_global_from_samples",
+      "reuse_invalid_comparison",
+      "increase_parameter_precision_without_information"
+    ],
+    "forbidden_quantities": [
+      "quality_weight",
+      "A",
+      "B"
+    ],
+    "artifacts": [
+      "summary",
+      "figure_caption"
+    ],
+    "optional_quantities": {}
+  },
+  {
+    "case_id": "evaluation-fixed-weight",
+    "expect": {
+      "status": "answered",
+      "decision": "A",
+      "claim_scope": "declared_weights_only"
+    },
+    "quantities": {
+      "A": {
+        "value": 7.5,
+        "tolerance": 1e-9
+      },
+      "B": {
+        "value": 5.5,
+        "tolerance": 1e-9
+      },
+      "threshold": {
+        "value": 0.5,
+        "tolerance": 1e-9
+      },
+      "quality_weight": {
+        "value": 0.75,
+        "tolerance": 1e-9
+      }
+    },
+    "required_actions": [],
+    "forbidden_actions": [
+      "fabricate_missing_data",
+      "relax_hard_constraints_without_authorization",
+      "claim_global_from_samples",
+      "reuse_invalid_comparison",
+      "increase_parameter_precision_without_information"
+    ],
+    "forbidden_quantities": [],
+    "artifacts": [
+      "summary",
+      "figure_caption"
+    ],
+    "optional_quantities": {}
+  }
+]

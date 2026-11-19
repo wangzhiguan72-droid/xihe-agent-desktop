@@ -1,0 +1,1 @@
+{"schema_version":1,"slots":["research"],"modes":["append","replace"],"problem_types":["pde","ode","mechanism","simulation"],"stages":["modeling","solving","validation"]}

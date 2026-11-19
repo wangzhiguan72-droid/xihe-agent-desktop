@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "mcm-icm",
+  "label": "MCM/ICM Mathematical Contest in Modeling",
+  "identity": {
+    "competition": "MCM/ICM",
+    "edition": "to-verify",
+    "stage": "contest",
+    "track": "to-verify"
+  },
+  "match": {
+    "any": ["MCM/ICM", "MCM", "ICM", "美赛"],
+    "all": []
+  },
+  "skills": {
+    "default": "contest-modeling-generic",
+    "providers": {}
+  },
+  "rules": "rules.json",
+  "workflow": "workflow.json",
+  "template": "paper"
+}

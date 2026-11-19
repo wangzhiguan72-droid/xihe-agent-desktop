@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "pdf_count": 16,
+  "total_pdf_pages_available": 657,
+  "provenance_note": "Historical contest samples; filenames alone do not verify award level, official rules, or document completeness.",
+  "note": "随包仅提供论文元数据与蒸馏卡；原始 PDF 及逐页全文未随包分发。",
+  "papers": [
+    {
+      "id": "2022-A",
+      "year": 2022,
+      "problem": "A",
+      "pdf_pages_available": 50,
+      "possible_truncation": false,
+      "summary_sheet_observed": true,
+      "text_extraction": "embedded_text"
+    },
+    {
+      "id": "2022-B",
+      "year": 2022,
+      "problem": "B",
+      "pdf_pages_available": 30,
+      "possible_truncation": false,
+      "summary_sheet_observed": false,
+      "text_extraction": "embedded_text"
+    },
+    {
+      "id": "2022-C",
+      "year": 2022,
+      "problem": "C",
+      "pdf_pages_available": 66,
+      "possible_truncation": false,
+      "summary_sheet_observed": true,
+      "text_extraction": "embedded_text"
+    },
+    {
+      "id": "2022-D",
+      "year": 2022,
+      "problem": "D",
+      "pdf_pages_available": 28,
+      "possible_truncation": false,
+      "summary_sheet_observed": false,
+      "text_extraction": "embedded_text"
+    },
+    {
+      "id": "2022-E",
+      "year": 2022,
+      "problem": "E",
+      "pdf_pages_available": 35,
+      "possible_truncation": false,
+      "summary_sheet_observed": true,
+      "text_extraction": "embedded_text"
+    },
+    {
+      "id": "2023-A",
+      "year": 2023,
+      "problem": "A",
+      "pdf_pages_available": 44,
+      "possible_truncation": false,
+      "summary_sheet_observed": true,
+      "text_extraction": "embedded_text"
+    },
+    {
+      "id": "2023-B",
+      "year": 2023,
+      "problem": "B",
+      "pdf_pages_available": 23,
+      "possible_truncation": true,
+      "summary_sheet_observed": true,
+      "text_extraction": "embedded_text"
+    },
+    {
+      "id": "2023-C",
+      "year": 2023,
+      "problem": "C",
+      "pdf_pages_available": 27,
+      "possible_truncation": true,
+      "summary_sheet_observed": true,
+      "text_extraction": "embedded_text"
+    },
+    {
+      "id": "2024-A",
+      "year": 2024,
+      "problem": "A",
+      "pdf_pages_available": 50,
+      "possible_truncation": false,
+      "summary_sheet_observed": true,
+      "text_extraction": "embedded_text"
+    },
+    {
+      "id": "2024-B",
+      "year": 2024,
+      "problem": "B",
+      "pdf_pages_available": 72,
+      "possible_truncation": false,
+      "summary_sheet_observed": true,
+      "text_extraction": "embedded_text"
+    },
+    {
+      "id": "2024-C",
+      "year": 2024,
+      "problem": "C",
+      "pdf_pages_available": 37,
+      "possible_truncation": true,
+      "summary_sheet_observed": true,
+      "text_extraction": "embedded_text"
+    },
+    {
+      "id": "2024-D",
+      "year": 2024,
+      "problem": "D",
+      "pdf_pages_available": 76,
+      "possible_truncation": true,
+      "summary_sheet_observed": true,
+      "text_extraction": "embedded_text"
+    },
+    {
+      "id": "2025-A",
+      "year": 2025,
+      "problem": "A",
+      "pdf_pages_available": 29,
+      "possible_truncation": true,
+      "summary_sheet_observed": true,
+      "text_extraction": "embedded_text"
+    },
+    {
+      "id": "2025-B",
+      "year": 2025,
+      "problem": "B",
+      "pdf_pages_available": 36,
+      "possible_truncation": true,
+      "summary_sheet_observed": true,
+      "text_extraction": "embedded_text"
+    },
+    {
+      "id": "2025-C",
+      "year": 2025,
+      "problem": "C",
+      "pdf_pages_available": 27,
+      "possible_truncation": true,
+      "summary_sheet_observed": true,
+      "text_extraction": "embedded_text"
+    },
+    {
+      "id": "2025-D",
+      "year": 2025,
+      "problem": "D",
+      "pdf_pages_available": 27,
+      "possible_truncation": false,
+      "summary_sheet_observed": true,
+      "text_extraction": "embedded_text"
+    }
+  ]
+}

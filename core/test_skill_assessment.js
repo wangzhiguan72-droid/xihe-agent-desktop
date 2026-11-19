@@ -1,0 +1,97 @@
+'use strict';
+const assert = require('assert/strict');
+const fs = require('fs'), os = require('os'), path = require('path');
+const a = require('./skill_assessment'), plans = require('./project_plan'), skills = require('./skills');
+const { buildSystem } = require('./agent');
+const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'xihe-skill-assessment-'));
+const roots = skills.ROOTS.slice();
+function put(name, contract, extra = {}) {
+  const dir = path.join(temp, 'app', 'skills', name); fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'SKILL.md'), `---\nname: ${name}\nversion: 1.0\n---\nBODY_${name}`);
+  if (contract) fs.writeFileSync(path.join(dir, a.FILE), JSON.stringify({ schema_version: 1, ...contract }));
+  for (const [file, text] of Object.entries(extra)) { const dest = path.join(dir, file); fs.mkdirSync(path.dirname(dest), { recursive: true }); fs.writeFileSync(dest, text); }
+  return dir;
+}
+try {
+  skills.ROOTS.splice(0);
+  assert.equal(a.assess(null, {}).status, 'unknown');
+  assert.throws(() => a.normalizeContext({ data: 'maybe' }), /数组/);
+  assert.throws(() => a.normalizeContext({ auto_accept: true }), /未知/);
+  assert.throws(() => a.normalizeContract({ schema_version: 1, score: 10 }), /未知/);
+  assert.throws(() => a.normalizeContract({ schema_version: 1, slots: [] }), /不能为空/);
+  const c = a.normalizeContract({ schema_version: 1, problem_types: ['time-series'], requires: { data: ['observations'], tools: ['python_run'], plugins: ['solver'] }, constraints: { split: 'time' } });
+  const env = { context: { problem_types: ['time-series'], data: ['observations'], constraints: { split: 'time' } }, tools: ['python_run'], plugins: ['solver'] };
+  assert.equal(a.assess(c, env).status, 'compatible');
+  assert.equal(a.assess(c, { ...env, context: {} }).status, 'unknown');
+  assert.equal(a.assess(c, { ...env, context: { ...env.context, data: [] } }).status, 'incompatible');
+  assert.equal(a.assess(c, { ...env, tools: [] }).status, 'incompatible');
+  assert.equal(a.assess(c, { ...env, plugins: [] }).status, 'incompatible');
+  assert.equal(a.assess(c, { ...env, context: { ...env.context, constraints: { split: 'random' } } }).status, 'incompatible');
+  assert.equal(a.assess(c, { ...env, context: { ...env.context, problem_types: ['time-series', 'kinematics'] } }).status, 'incompatible');
+  put('contest-modeling-generic', { slots: ['main'] });
+  const ts = put('time-series', { slots: ['research'], problem_types: ['time-series'] }, { 'references/card.md': 'TIME_SERIES_REFERENCE' });
+  put('general', { slots: ['research'] });
+  put('conflict', { slots: ['review'], conflicts: ['general'] });
+  put('fixed-a', { constraints: { grid: 'fine' } }); put('fixed-b', { constraints: { grid: 'coarse' } });
+  put('dynamic-conflict', { conflicts: ['general'] });
+  put('dynamic-a', { conflicts: ['dynamic-b'] }); put('dynamic-b', {});
+  put('figures-only', { slots: ['figures'] });
+  const plan = plans.defaultPlan(); plan.task_context.problem_types = ['kinematics'];
+  plan.skills.research = { mode: 'append', primary: 'time-series', fallbacks: [] };
+  const app = path.join(temp, 'app');
+  let effective = plans.resolvePlan({ appDir: app, plan });
+  assert.equal(effective.entries[1].installation.status, 'installable');
+  assert.equal(effective.entries[1].applicability.status, 'incompatible');
+  assert(effective.entries[1].blocked);
+  assert.equal(effective.assessment.gain.status, 'unverified');
+  const frozen = plans.snapshot({ appDir: app, plan, storageRoot: path.join(temp, 'store') });
+  const session = { mode: 'math', skill_plan_snapshot: frozen };
+  const prompt = buildSystem('math', temp, {}, app, 'deepseek', null, session);
+  assert(!prompt.includes('BODY_time-series'));
+  assert.throws(() => plans.loadSessionSkill(app, session, 'time-series'), /不适配/);
+  assert.throws(() => plans.loadSessionSkill(app, session, 'time-series', 'card.md'), /不适配/);
+  plan.skills.research.fallbacks = ['general'];
+  effective = plans.resolvePlan({ appDir: app, plan });
+  assert.equal(effective.entries[1].name, 'general'); assert(!effective.entries[1].blocked);
+  const withGeneral = plans.snapshot({ appDir: app, plan, storageRoot: path.join(temp, 'fallback') });
+  assert.throws(() => plans.loadSessionSkill(app, { skill_plan_snapshot: withGeneral }, 'dynamic-conflict'), /组合冲突/);
+  const dynamicSession = { skill_plan_snapshot: withGeneral };
+  assert.throws(() => plans.loadSessionSkill(app, dynamicSession, 'figures-only'), /不适配/);
+  assert.equal(plans.loadSessionSkill(app, dynamicSession, 'figures-only', null, {}, { slot: 'figures' }).name, 'figures-only');
+  plans.loadSessionSkill(app, dynamicSession, 'dynamic-a');
+  assert.throws(() => plans.loadSessionSkill(app, dynamicSession, 'dynamic-b'), /组合冲突/);
+  const legacySession = {};
+  assert.throws(() => plans.loadSessionSkill(app, legacySession, 'figures-only'), /不适配/);
+  plans.loadSessionSkill(app, legacySession, 'dynamic-a');
+  assert.throws(() => plans.loadSessionSkill(app, legacySession, 'dynamic-b'), /组合冲突/);
+  const originalRead = skills.readSkillBundle;
+  const mainFile = path.join(app, 'skills', 'contest-modeling-generic', 'SKILL.md'), oldMain = fs.readFileSync(mainFile);
+  try {
+    skills.readSkillBundle = (...args) => { fs.appendFileSync(mainFile, '\nconcurrent edit'); return originalRead(...args); };
+    assert.throws(() => plans.snapshot({ appDir: app, plan, storageRoot: path.join(temp, 'race') }), /解析后已变化/);
+    assert.throws(() => plans.exportPackage({ appDir: app, plan }), /解析后已变化/);
+    assert(!fs.existsSync(path.join(temp, 'race')), 'inconsistent bundles must be rejected before snapshot writes');
+  } finally { skills.readSkillBundle = originalRead; fs.writeFileSync(mainFile, oldMain); }
+  plan.skills.review = { mode: 'append', primary: 'conflict', fallbacks: [] };
+  effective = plans.resolvePlan({ appDir: app, plan });
+  assert(effective.entries[1].blocked && effective.entries[3].blocked);
+  plan.skills.research.primary = 'fixed-a'; plan.skills.research.fallbacks = []; plan.skills.review.primary = 'fixed-b';
+  effective = plans.resolvePlan({ appDir: app, plan });
+  assert(effective.entries[1].blocked && effective.entries[3].blocked);
+  plan.skills.review.mode = 'off'; plan.skills.research.primary = 'time-series'; plan.task_context.problem_types = ['time-series'];
+  const pack = plans.exportPackage({ appDir: app, plan });
+  assert(pack.skills.find(row => row.name === 'time-series').files.some(row => row.path === a.FILE));
+  const imported = plans.importPackage(pack, null, path.join(temp, 'import'));
+  const pinned = plans.snapshot({ appDir: app, plan: imported.plan, lock: imported.lock, options: { projectRoot: imported.assetRoot }, storageRoot: path.join(temp, 'import') });
+  fs.writeFileSync(path.join(ts, a.FILE), JSON.stringify({ schema_version: 1, problem_types: ['kinematics'] }));
+  assert(plans.loadSessionSkill(app, { skill_plan_snapshot: pinned }, 'time-series').contract.problem_types.includes('time-series'));
+  assert.equal(plans.publicSnapshot(pinned).assessment.gain.status, 'unverified');
+  assert.equal(plans.resolvePlan({ appDir: app, plan }).entries[1].blocked, true, 'new sessions see changed metadata');
+  const invalid = put('invalid', { schema_version: 99 });
+  assert.throws(() => skills.readSkillBundle(app, 'invalid'), /schema_version/);
+  assert(fs.existsSync(invalid));
+  console.log('PASS Skill applicability: unknown/explicit absence, type/stage/dependencies, parameters, composition, fallback, runtime/reference bypass, frozen/imported metadata');
+} finally {
+  skills.ROOTS.splice(0, skills.ROOTS.length, ...roots);
+  assert.equal(path.dirname(temp), os.tmpdir()); fs.rmSync(temp, { recursive: true, force: true });
+}

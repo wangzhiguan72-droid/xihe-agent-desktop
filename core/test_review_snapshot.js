@@ -1,0 +1,102 @@
+'use strict';
+const assert = require('assert');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { Sandbox } = require('./sandbox');
+const { createSnapshot, snapshotBlockers, paperInputs } = require('./review_snapshot');
+const root = fs.mkdtempSync(path.join(os.tmpdir(), 'xihe-snapshot-'));
+const ctx = { workspace: root, sandbox: new Sandbox(root), session: {} };
+const put = (rel, body) => { const file = path.join(root, rel); fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, body); return file; };
+const deny = (fn, pattern) => assert.throws(fn, pattern);
+try {
+  put('paper/main.tex', '\\input{chapters/one}\n');
+  put('paper/chapters/one.tex', 'chapter one\n');
+  put('paper/refs.bib', '@article{x}\n');
+  put('paper/figures/plot.png', Buffer.from([1, 2, 3]));
+  put('paper/main.pdf', 'output');
+  put('paper/build.log', 'log');
+  put('q1/figures/external.pdf', 'figure-v1');
+  put('findings/support_manifest.tex', 'support-v1');
+  put('paper/main.fls', 'INPUT ./main.tex\nINPUT ./chapters/one.tex\nINPUT ../q1/figures/external.pdf\nINPUT ../findings/support_manifest.tex\nINPUT ./main.pdf\nINPUT ./build.log\n');
+  put('main.tex', '\\input{paper/main}\n');
+  put('main.fls', 'INPUT ./main.tex\nINPUT ./q1/figures/external.pdf\nINPUT ./findings/support_manifest.tex\n');
+  put('paper/unused.fls', 'INPUT ../q2/unrelated.txt\n');
+  put('q2/unrelated.txt', 'unrelated');
+  const inputs = paperInputs(root);
+  assert(inputs.some(x => x.rel === 'paper/main.tex'));
+  assert(inputs.some(x => x.rel === 'paper/chapters/one.tex'));
+  assert(inputs.some(x => x.rel === 'paper/figures/plot.png'));
+  assert(inputs.some(x => x.rel === 'q1/figures/external.pdf'));
+  assert(inputs.some(x => x.rel === 'findings/support_manifest.tex'));
+  assert(!inputs.some(x => x.rel === 'paper/main.pdf' || x.rel === 'paper/build.log'));
+  assert(!inputs.some(x => x.rel === 'q2/unrelated.txt'));
+  const rootInputs = paperInputs(root, 'main.tex');
+  assert(rootInputs.some(x => x.rel === 'main.tex'));
+  assert(rootInputs.some(x => x.rel === 'q1/figures/external.pdf'));
+  assert(rootInputs.some(x => x.rel === 'findings/support_manifest.tex'));
+  assert(!rootInputs.some(x => x.rel === 'q2/unrelated.txt'));
+  const beforeManifest = inputs.find(x => x.rel === 'findings/support_manifest.tex').sha256;
+  put('findings/support_manifest.tex', 'support-v2');
+  assert.notEqual(paperInputs(root).find(x => x.rel === 'findings/support_manifest.tex').sha256, beforeManifest);
+  const beforeChapter = inputs.find(x => x.rel === 'paper/chapters/one.tex').sha256;
+  put('paper/chapters/one.tex', 'chapter two\n');
+  assert.notEqual(paperInputs(root).find(x => x.rel === 'paper/chapters/one.tex').sha256, beforeChapter);
+  put('paper/chapters/one.tex', 'chapter one\n');
+  const beforeFigure = inputs.find(x => x.rel === 'q1/figures/external.pdf').sha256;
+  put('q1/figures/external.pdf', 'figure-v2');
+  assert.notEqual(paperInputs(root).find(x => x.rel === 'q1/figures/external.pdf').sha256, beforeFigure);
+  const snapshot = createSnapshot(ctx, { kind: 'review', label: 'First review', files: ['paper/main.tex', 'paper/chapters/one.tex', 'paper/figures/plot.png'] });
+  assert.equal(snapshot.kind, 'review');
+  assert(snapshot.root_rel.startsWith('findings/review_snapshots/'));
+  assert.equal(snapshot.files.length, 3);
+  assert.equal(snapshotBlockers(root, snapshot).length, 0);
+  assert.equal(fs.readFileSync(path.join(root, snapshot.files[0].copy_rel), 'utf8'), '\\input{chapters/one}\n');
+  put('paper/main.tex', 'changed\n');
+  assert.equal(fs.readFileSync(path.join(root, snapshot.files[0].copy_rel), 'utf8'), '\\input{chapters/one}\n');
+  assert(snapshotBlockers(root, snapshot).length);
+  assert.deepEqual(snapshotBlockers(root, snapshot, { check_sources: false }), []);
+  put('paper/main.tex', '\\input{chapters/one}\n');
+  assert.deepEqual(snapshotBlockers(root, snapshot), []);
+  put(snapshot.files[0].copy_rel, 'tampered');
+  assert(snapshotBlockers(root, snapshot, { check_sources: false }).length);
+  put('scripts/check.py', 'print(1)\n');
+  put('data/in.csv', 'value\n1\n');
+  const engine = require('./agent'), { collectSourceFiles } = require('./tools');
+  const beforeStamp = engine.inputStampHash(engine.stampInputFiles(root));
+  const beforeSources = collectSourceFiles(root, {});
+  const second = createSnapshot(ctx, { kind: 'release', files: ['paper/main.tex', 'scripts/check.py', 'data/in.csv'] });
+  const third = createSnapshot(ctx, { kind: 'release', files: ['paper/main.tex'] });
+  assert.equal(engine.inputStampHash(engine.stampInputFiles(root)), beforeStamp, 'release copies must not change scientific input identity');
+  assert.deepEqual(collectSourceFiles(root, {}), beforeSources, 'release copies must not duplicate source inventory');
+  assert(second.root_rel.startsWith('submission/releases/'));
+  assert.notEqual(second.id, third.id);
+  assert(fs.existsSync(path.join(root, second.manifest.rel)));
+  assert(fs.existsSync(path.join(root, third.manifest.rel)));
+  assert.deepEqual(snapshotBlockers(root, second), []);
+  put(second.manifest.rel, '{}');
+  assert(snapshotBlockers(root, second).length);
+  deny(() => createSnapshot(ctx, { kind: 'review', files: ['paper/main.tex', 'paper/main.tex'] }), /重复/);
+  deny(() => createSnapshot(ctx, { kind: 'review', files: ['paper'] }), /文件|目录/);
+  deny(() => createSnapshot(ctx, { kind: 'review', files: ['../outside.txt'] }), /越界|路径/);
+  deny(() => createSnapshot(ctx, { kind: 'review', files: [snapshot.files[0].copy_rel] }), /快照|递归/);
+  deny(() => createSnapshot(ctx, { kind: 'review', files: [] }), /文件|1/);
+  deny(() => createSnapshot(ctx, { kind: 'review', files: Array.from({ length: 2001 }, (_, i) => `missing${i}.txt`) }), /2000/);
+  const oversized = put('large.bin', '');
+  fs.truncateSync(oversized, 800_000_001);
+  deny(() => createSnapshot(ctx, { kind: 'review', files: ['large.bin'] }), /800MB/);
+  fs.unlinkSync(oversized);
+  try { fs.symlinkSync(path.join(root, snapshot.root_rel), path.join(root, 'snapshot-alias'), 'junction'); deny(() => createSnapshot(ctx, { kind: 'review', files: ['snapshot-alias/paper/main.tex'] }), /快照|递归/); }
+  catch (error) { if (error.code !== 'EPERM') throw error; }
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'xihe-snapshot-out-'));
+  try { fs.writeFileSync(path.join(outside, 'secret.txt'), 'secret'); fs.symlinkSync(outside, path.join(root, 'escape'), 'junction'); deny(() => createSnapshot(ctx, { kind: 'review', files: ['escape/secret.txt'] }), /越界/); }
+  catch (error) { if (error.code !== 'EPERM') throw error; }
+  finally { fs.rmSync(outside, { recursive: true, force: true }); }
+  const standalone = fs.mkdtempSync(path.join(os.tmpdir(), 'xihe-root-tex-'));
+  try {
+    fs.writeFileSync(path.join(standalone, 'main.tex'), 'root main');
+    fs.writeFileSync(path.join(standalone, 'main.fls'), 'INPUT ./main.tex\n');
+    assert.deepEqual(paperInputs(standalone, 'main.tex').map(x => x.rel), ['main.tex']);
+  } finally { fs.rmSync(standalone, { recursive: true, force: true }); }
+  console.log('review snapshot: PASS');
+} finally { fs.rmSync(root, { recursive: true, force: true }); }

@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "id": "mathorcup-bigdata",
+  "label": "MathorCup 数学应用挑战赛大数据竞赛",
+  "identity": {
+    "competition": "MathorCup 大数据竞赛",
+    "edition": "to-verify",
+    "stage": "to-verify"
+  },
+  "match": {
+    "any": [
+      "妈妈杯大数据",
+      "妈妈杯 大数据"
+    ],
+    "all": [
+      "MathorCup",
+      "大数据"
+    ]
+  },
+  "skills": {
+    "default": "my-mathorcup-bigdata",
+    "providers": {}
+  },
+  "rules": "rules.json",
+  "workflow": "workflow.json",
+  "template": "paper"
+}

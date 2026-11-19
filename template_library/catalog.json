@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "templates": [
+    {"id":"generic","label":"通用数学建模","category":"contest","contest_kind":"generic","description":"读题、数据审计、基线、改进、验证与交付。按实际赛事登记规则。","research":"xihe-research-methods","figures":"xihe-evidence-figures","resources":["contest_packages/generic/paper/main.tex"]},
+    {"id":"cumcm","label":"国赛通用流程","category":"contest","contest_kind":"cumcm","description":"沿用现有国赛主技能、逐问证据链与国赛论文模板。","research":"xihe-research-methods","figures":"xihe-evidence-figures","resources":["contest_packages/cumcm/paper/main.tex"]},
+    {"id":"simulation","label":"仿真与机理建模","category":"method","contest_kind":null,"description":"保留当前赛事及规则，补充 PDE/机理仿真求解、边界条件、收敛和守恒验证。","research":"pde-award-solve","figures":"xihe-evidence-figures","resources":["skills/pde-award-solve/references/template_scipy.py","skills/pde-award-solve/references/template_matlab.m"]},
+    {"id":"apmcm","label":"亚太杯 APMCM","category":"contest","contest_kind":"apmcm","description":"基于 2022—2025 历史论文蒸馏，使用独立亚太杯工作流与英文骨架；届次、赛项及规则另行核实。","research":"xihe-research-methods","figures":"xihe-evidence-figures","resources":["knowledge/apmcm/START.md","contest_packages/apmcm/paper/main.tex"]},
+    {"id":"mcm-icm","label":"美赛 MCM/ICM","category":"contest","contest_kind":"mcm-icm","description":"使用现有美赛赛事包及模板，具体届次规则独立核对。","research":"xihe-research-methods","figures":"xihe-evidence-figures","resources":["contest_packages/mcm-icm/paper/main.tex"]},
+    {"id":"mathorcup-bigdata","label":"MathorCup 大数据","category":"contest","contest_kind":"mathorcup-bigdata","description":"使用现有大数据竞赛工作流，按届次与初赛/决赛核对规则。","research":"xihe-research-methods","figures":"xihe-evidence-figures","resources":["contest_packages/mathorcup-bigdata/paper/main.tex"]}
+  ]
+}

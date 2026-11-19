@@ -1,0 +1,7 @@
+interface:
+  display_name: "数学建模全流程"
+  short_description: "读题建模、创新讨论、真实计算和论文交付，关键选择与你商量并保留证据"
+  default_prompt: "使用 $my-cumcm-deepseek 继续数学建模项目，先核对已有进度，关键路线与创新选择交给用户确认。"
+policy:
+  allow_implicit_invocation: true
+

@@ -1,0 +1,78 @@
+# 羲和 Agent
+
+面向数学建模竞赛与日常编程的本地桌面智能体。Electron 负责窗口，内置 Node 核心服务负责会话、工具、沙箱、知识库与任务调度；模型 API 由用户自行配置，密钥只保存在本机。
+
+## 功能
+
+- **多模型会话**：OpenAI 兼容 / Anthropic 兼容端点，主模型、重模型、视觉模型可分别设置。
+- **数模工作流**：读题契约、问题图、假设与公式登记、结果互验、论文编译、交付打包。
+- **本地沙箱**：所有读写限定在项目工作区；删除进入回收站；外部项目默认停用自动备份。
+- **知识库**：内置精选方法卡 + 可选外部语料索引；按 provenance 区分范文、建议、资料、旧作与自动生成稿。
+- **论文检索**：随包 `academic-search` MCP（Crossref / arXiv 元数据），可选联网网页搜索。
+- **后台任务**：长计算排队执行，服务重启后可恢复与续接。
+
+## 快速开始
+
+### 便携版（推荐给最终用户）
+
+1. 解压 `xihe-agent-portable.zip` 到任意可写目录（不要放在 `Program Files`）。
+2. 双击 `启动羲和.cmd`。
+3. 在设置页填入自己的模型 API Key，选择默认模型。
+
+数据、工作区、日志都写在解压目录内，删除目录即可完整卸载。
+
+### 源码运行
+
+需要 Node.js 20+ 与 Python 3.10+（PDF 抽取可选装 `pymupdf`）。
+
+```bash
+npm install          # 仅安装 Electron
+npm start            # 浏览器模式：node core/server.js --open-edge
+npm run desktop      # Electron 桌面窗口
+npm test             # 全量测试（较慢，会启动本地服务）
+```
+
+国内网络可使用仓库内的 `.npmrc`（npmmirror 镜像）。
+
+## 首次配置
+
+设置页支持常见提供商，也可添加自定义 OpenAI 兼容端点。`config/settings.example.json` 是字段示例，复制为 `config/settings.json` 后按需修改；界面保存时会自动生成该文件。
+
+- 密钥不写入 `settings.json`，单独存放在 `config/*.key`。
+- `kb_roots` 填自己的资料目录；留空则只使用内置知识。
+- 网页搜索默认使用随包 `vendor/open-webSearch`，首次调用时自动拉起本地守护进程。
+
+## 目录结构
+
+```
+app/ 或源码根目录
+  core/          核心服务、工具、沙箱、知识库、任务队列
+  ui/            前端界面
+  skills/        内置技能说明
+  knowledge/     内置方法卡与赛题笔记
+  vendor/        随包 MCP 服务与网页搜索
+  contest_packages/  各赛事模板与规则
+  templates/     LaTeX / 绘图模板
+  data/kb/       随包知识库索引
+  config/        本地设置（不随仓库分发）
+```
+
+便携版把 `app/`、`runtime/`、`data/`、`workspace/` 放在同一层，由启动脚本设置 `XIHE_HOME`。
+
+## 隐私与数据
+
+- 不包含遥测；除用户配置的模型端点、学术检索和显式网页搜索外，不主动外联。
+- 会话、日志、工作区只写在本机 `data/` 与 `workspace/`。
+- 仓库与便携包已移除个人路径、账号、密钥、旧会话与私人稿件。
+- 内置知识库中的范文文本仅作本地检索参考，版权归原作者；如需公开再分发，请自行取得授权。发现不当内容请通过仓库 Issue 联系移除。
+
+## 已知限制
+
+- Windows 为主要目标平台；Linux/macOS 需自行准备 Electron 运行时并调整启动脚本。
+- LaTeX 编译依赖本机 TeX Live；MATLAB 相关工具需要本机 MATLAB。
+- 学术检索只返回元数据，不保证全文可得，也不代表已精读。
+- 网页搜索依赖第三方搜索引擎页面结构，可能随对方改版失效。
+
+## 许可
+
+代码以 MIT 许可发布，见 [LICENSE](LICENSE)。第三方组件、字体与竞赛模板的许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。

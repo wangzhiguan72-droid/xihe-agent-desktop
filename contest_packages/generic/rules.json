@@ -1,0 +1,28 @@
+{
+  "sources": [],
+  "require_confirmation": true,
+  "required_fields": [
+    "source",
+    "profile"
+  ],
+  "paper_quality_profile": null,
+  "defaults": {
+    "support_policy": {
+      "max_bytes": null
+    }
+  },
+  "paper": {
+    "abstract_first_page": false,
+    "toc_required": false,
+    "support_manifest_required": false,
+    "appendix_heading_titles": [],
+    "ai_details": {
+      "title": "",
+      "filename": "",
+      "draft_only": true,
+      "required": false
+    }
+  },
+  "quality": {},
+  "profiles": {}
+}

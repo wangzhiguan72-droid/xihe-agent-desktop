@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "apmcm",
+  "label": "APMCM 亚太地区大学生数学建模竞赛",
+  "identity": {
+    "competition": "APMCM",
+    "edition": "to-verify",
+    "stage": "to-verify",
+    "track": "English"
+  },
+  "match": {
+    "any": ["APMCM", "亚太杯", "亚太地区大学生数学建模竞赛"],
+    "all": []
+  },
+  "skills": {
+    "default": "contest-modeling-apmcm",
+    "providers": {}
+  },
+  "rules": "rules.json",
+  "workflow": "workflow.json",
+  "template": "paper"
+}

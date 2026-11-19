@@ -1,0 +1,37 @@
+{
+  "default_model": "deepseek-flash",
+  "heavy_model": "deepseek-v4-pro",
+  "vision_model": "glm-5.3-flash",
+  "summarize_model": "deepseek-flash",
+  "temperature": 0.6,
+  "daily_budget": 15,
+  "ctx_limit": 131072,
+  "max_output_tokens": 65536,
+  "reasoning_effort": "on",
+  "role_models": {
+    "modeler": "",
+    "coder": "",
+    "writer": "",
+    "reviewer": ""
+  },
+  "provider_models": {},
+  "disabled_models": [],
+  "kb_roots": [],
+  "custom_providers": [
+    {
+      "id": "example-openai-compatible",
+      "name": "示例中转站",
+      "base": "https://api.example.com/v1",
+      "kind": "openai",
+      "models": ["example-model"]
+    }
+  ],
+  "websearch": {
+    "port": 3210,
+    "engines": ["baidu"]
+  },
+  "academic_mcp": {
+    "command": "",
+    "args": []
+  }
+}

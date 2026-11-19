@@ -1,0 +1,248 @@
+%! Mode:: "TeX:UTF-8"
+%! TEX program = xelatex
+% 羲和论文模板：沿用用户 2026 国赛《完整论文.tex》的导言区与章节结构（cumcmthesis.cls，电子版无承诺书/编号页/目录）。
+% 章节顺序勿随意改：摘要 → 问题重述 → 问题分析 → 模型假设 → 符号说明 → 数据说明与预处理
+%   → 问题X（思路 → 模型建立 → 求解 → 结果分析 → 适配检验）→ 模型评价
+%   → AI 工具使用声明（位置按当届要求）→ 参考文献 → 附录
+% 本机用户质量契约（2026-10-19），不是全国统一官方条款：
+% 摘要一页、3—5关键词；正文20—30页（优先23—28），附录≤20页，全文PDF≤50页；
+% 摘要计入全文：正文30页+摘要1页时，附录最多19页。附录不必凑满20页。
+% 文献6—10篇、全部正文有效引用且可查；附录清单+核心代码节选；ZIP严格<20,000,000字节。
+% 正文只留核心表格，超过1页的原始数据和详细中间表移附录/支撑材料。
+% PDF大小、AI披露位置和其他官方规则按有来源的当届规范核对。
+\PassOptionsToPackage{quiet}{xeCJK}
+\documentclass[withoutpreface,bwprint]{cumcmthesis}
+\usepackage{etoolbox}
+\BeforeBeginEnvironment{tabular}{\zihao{-5}}
+\usepackage{fvextra}
+\usepackage{longtable}
+\fvset{fontsize=\fontsize{8}{10}\selectfont,
+  frame=single,framerule=0.4pt,framesep=3mm,
+  numbers=left,numbersep=7pt,stepnumber=1,numberblanklines=true,
+  firstnumber=1,xleftmargin=2.8em,xrightmargin=2pt,
+  breaklines=true,breakanywhere=false,breakafter={,;=+-/*},breakautoindent=false,breakindent=1em,
+  baselinestretch=1}
+\renewcommand{\theFancyVerbLine}{\normalfont\fontsize{7}{8}\selectfont\arabic{FancyVerbLine}}
+\usepackage{xurl}
+\usepackage[section]{placeins}
+\usepackage{float}
+\captionsetup{font={small,bf},skip=5pt}
+\setlength{\textfloatsep}{12pt plus 2pt minus 2pt}
+\setlength{\intextsep}{10pt plus 2pt minus 2pt}
+\renewcommand{\songti}{\song}
+\newcolumntype{C}{>{\centering\arraybackslash}X}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
+\newcolumntype{R}{>{\raggedleft\arraybackslash}X}
+\renewcommand{\textbf}[1]{{\song\bfseries #1}}
+\emergencystretch=3em
+\widowpenalty=10000
+\clubpenalty=10000
+
+\title{（论文题目：基于××模型的××问题研究）}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+（开门见山一句：研究对象与总目标。）
+
+% 只加粗具体模型/算法、关键数值+单位、最终方案/决策，可选“针对问题X”。
+% 禁整段、过程铺垫和“首先/其次/值得注意的是/综上所述/数学建模/数据分析”加粗。
+针对问题一，采用\textbf{\boldmath （具体核心模型名）}……，得到\textbf{\boldmath （关键数值+单位）}，最终选择\textbf{（方案/决策）}。
+
+问题二……
+
+问题三……
+
+问题四……
+
+（末段：检验结论与适用条件，用事实说话，不自夸。）
+
+\keywords{（本题对象）；（核心模型）；（关键算法）}
+\end{abstract}
+
+\section{问题重述}
+
+\subsection{问题背景}
+
+（待填）
+
+\subsection{问题回顾}
+
+（待填：逐问列出输入、输出与交付文件。）
+
+\section{问题分析}
+
+\subsection{总体分析}
+
+（待填：各问递进关系与数据接口。）
+
+% 总体技术路线图：flowchart_draw({spec:{name:"fig00_overall_flow", layout:"overview", ...}})
+% 放在「问题分析」末尾。数据→各问→结论的信息流，不是流程堆砌；节点 ≤7。
+% \begin{figure}[htbp]
+%   \centering
+%   \includegraphics[width=\linewidth]{figures/fig00_overall_flow.pdf}
+%   \caption{（一句话结论：全文信息流如何从数据走到各问结论）}
+%   \label{fig:overall-flow}
+% \end{figure}
+
+\subsection{各问分析}
+
+\textbf{问题一。}（待填）
+
+\section{模型假设}
+
+\begin{enumerate}
+  \item \textbf{（假设名）。}（内容）。依据：（题目/数据）。作用：（进入哪个方程或约束）。限制：（何时失效）。
+\end{enumerate}
+
+\section{符号说明}
+
+\begin{table}[htbp]
+  \centering
+  \caption{主要符号说明}
+  \label{tab:symbols}
+  \begin{tabular}{clcl}
+    \toprule
+    符号 & 含义（单位） & 符号 & 含义（单位） \\
+    \midrule
+    $x$ & （待填） & $y$ & （待填） \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\section{数据说明与预处理}
+
+（待填）
+
+\section{问题一：（模型名）的建立与求解}
+
+\subsection{建模思路}
+
+（2--3 句：本问数学本质与求解步骤。）
+
+\subsection{模型建立}
+
+（待填）
+
+% 本问流程图放「建模思路」末尾、「模型建立」之前（用户固定要求）：
+% flowchart_draw({spec:{name:"flow_q1", title:"问题一：××模型的建立与求解", rows:[...]}})
+% \begin{figure}[htbp]
+%   \centering
+%   \includegraphics[width=\linewidth]{figures/flow_q1.pdf}
+%   \caption{问题一建模与求解流程}
+%   \label{fig:q1-flow}
+% \end{figure}
+
+\subsection{模型求解}
+
+（待填）
+
+\subsection{结果与分析}
+
+（待填）
+
+% 结果图：matplotlib 按成书尺寸直接出矢量 PDF（figsize 用 mm/25.4，最小字号 ≥7pt），
+% 论文只 \includegraphics 不二次缩放。每问除流程图外至少 1 张结果图。
+% \begin{figure}[htbp]
+%   \centering
+%   \includegraphics[width=0.8\linewidth]{figures/fig01_q1_result.pdf}
+%   \caption{（一句话结论，不是"××示意图"）}
+%   \label{fig:q1-result}
+% \end{figure}
+
+\subsection{模型检验}
+
+（待填）
+
+\textbf{本问结论。}（最终答案 → 实际含义 → 关键检验证据与适用边界；带数值与单位，别让评委从图里猜。）
+
+\section{模型评价、改进与推广}
+
+\subsection{模型优点}
+
+\begin{enumerate}
+  \item （待填）
+\end{enumerate}
+
+\subsection{模型不足}
+
+\begin{enumerate}
+  \item （待填）
+\end{enumerate}
+
+\subsection{本文贡献}
+
+% 每条贡献用贡献卡写：原瓶颈 → 利用的结构 → 成立条件 → 改动 → 对照结果与证据路径 → 收益与代价 → 失效边界
+% 回指迭代记录（I-id）与运行编号（run_id）；未检索核实原创性的写成「针对本题的改进」。
+\begin{enumerate}
+  \item （待填）
+\end{enumerate}
+
+\subsection{模型改进与推广}
+
+\begin{enumerate}
+  \item （待填）
+\end{enumerate}
+
+\section*{AI 工具使用声明}
+
+% 2026 人工智能工具使用规定第 3 条：声明位于参考文献之前（硬规则，勿移到参考文献后面）。
+% 按真实使用情况填写；未使用就声明未使用，实际用了 AI 不得声明未使用。
+本参赛队在本题的完成过程中使用了人工智能工具作为辅助，具体使用情况如下：
+
+\begin{enumerate}
+  \item \textbf{使用的工具与型号}：（填写实际使用的工具与版本/型号，记不清的写「未记录」，不编造）。
+  \item \textbf{使用环节}：（如：文献检索、代码调试、语言润色、结果整理等；逐项如实填写）。
+  \item \textbf{采用与核验情况}：AI 生成的建模思路、代码与文字均由参赛队员审查、修改并核验；核心模型建立、结果分析与结论由参赛队主导完成。详细使用记录见支撑材料《AI 工具使用详情.pdf》。
+  \item \textbf{未使用 AI 的环节}：（如实填写；若无，写「无」）。
+\end{enumerate}
+
+\noindent 本队对论文全部内容的真实性、正确性负责。
+
+\begin{thebibliography}{9}
+  % 6—10篇；两教材须核验实际版本并在正文方法处有效引用，不复制未经核验的出版信息。
+  % 其余至少4篇支撑题目/模型/算法/参数；统一GB/T 7714-2015，文中使用\cite形成方括号编号。
+  \bibitem{ref1} （作者. 题名[J]. 刊名, 年, 卷(期): 页码.）正文须有 \verb|\cite{ref1}| 对应。
+\end{thebibliography}
+
+\clearpage
+\appendix
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+
+\section{支撑材料文件列表}
+
+% support_pack 后用下面的输入命令替换整个示例表，再编译论文、复核清单。
+% \input{../findings/support_manifest.tex}
+% 本机要求：清单与实际压缩包逐项对应；无材料须如实写“本论文没有支撑材料”。
+\begin{longtable}{@{}p{5.2cm}p{2.2cm}p{7.6cm}@{}}
+  \toprule
+  文件名 & 类型 & 内容说明 \\
+  \midrule
+  \endfirsthead
+  \toprule
+  文件名 & 类型 & 内容说明 \\
+  \midrule
+  \endhead
+  \texttt{scripts/q1\_solve.py} & 源程序 & （一句话说明该脚本做什么、产出哪个结果文件） \\
+  \texttt{result1.xlsx} & 结果数据表 & （对应题目要求的表/文件） \\
+  \bottomrule
+\end{longtable}
+
+\section{核心算法与关键步骤（节选）}
+
+% 本机要求：只展示精简的核心算法、关键求解步骤和必要补充结果。
+% 从真实源文件按行节选，说明功能及完整源码在支撑包的位置；勿把片段冒称完整可运行程序。
+% 绘图、通用读写和辅助脚本完整放支撑材料；完整计算链、入口、依赖、输入输出仍须可复现。
+% 没有用程序须如实说明；不得为篇幅要求捏造代码或删改实际AI使用披露。
+
+% \subsection*{问题一核心求解步骤}
+% 以下节选自 scripts/q1_solve.py；完整程序及运行说明见支撑材料。
+% \VerbatimInput[firstline=10,lastline=40]{../scripts/q1_solve.py}
+
+% \subsection*{问题二关键计算步骤}
+% 以下节选自 scripts/q2_solve.py；行范围须对照实际代码填写。
+% \VerbatimInput[firstline=20,lastline=50]{../scripts/q2_solve.py}
+
+\end{document}

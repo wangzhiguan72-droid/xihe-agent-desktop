@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "id": "generic",
+  "label": "通用数学建模",
+  "identity": {
+    "competition": "unknown",
+    "edition": "unknown",
+    "stage": "unknown"
+  },
+  "match": {
+    "any": [],
+    "all": []
+  },
+  "skills": {
+    "default": "contest-modeling-generic",
+    "providers": {}
+  },
+  "rules": "rules.json",
+  "workflow": "workflow.json",
+  "template": "paper"
+}

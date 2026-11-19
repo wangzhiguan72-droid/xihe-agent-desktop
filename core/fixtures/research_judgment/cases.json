@@ -1,0 +1,1205 @@
+[
+  {
+    "id": "site-mean",
+    "family": "optimization",
+    "prompt": "选择平均订单送达时间最小的站点，计算两方案目标值；给摘要和图注投影。",
+    "materials": {
+      "stations": {
+        "A": {
+          "east": 4,
+          "west": 14
+        },
+        "B": {
+          "east": 10,
+          "west": 6
+        }
+      },
+      "unit": "min",
+      "east_share": 0.65,
+      "objective": "min_order_weighted_mean"
+    },
+    "output_contract": {
+      "schema": "research-judgment-v1",
+      "fields": [
+        "case_id",
+        "status",
+        "decision",
+        "claim_scope",
+        "quantities",
+        "next_actions",
+        "artifacts",
+        "explanation"
+      ],
+      "statuses": [
+        "answered",
+        "conditional",
+        "infeasible",
+        "insufficient_evidence"
+      ],
+      "claim_scopes": [
+        "finite_domain_optimum",
+        "given_holdout_only",
+        "invalid_protocol",
+        "conditional_on_weight",
+        "parameter_family",
+        "identified_given_model",
+        "provided_constraints",
+        "sampled_candidates_only",
+        "declared_weights_only"
+      ],
+      "next_actions": [
+        "report_conditional_result",
+        "collect_missing_data",
+        "rebuild_asof_features",
+        "rolling_origin_backtest",
+        "refit_train_only",
+        "rerun_fair_comparison",
+        "measure_distinguishing_quantity",
+        "check_equivalent_parameters",
+        "recheck_hard_constraints",
+        "request_constraint_change",
+        "sensitivity_weights",
+        "expand_search_or_certify_bound",
+        "retain_simple_baseline",
+        "fabricate_missing_data",
+        "relax_hard_constraints_without_authorization",
+        "claim_global_from_samples",
+        "reuse_invalid_comparison",
+        "increase_parameter_precision_without_information"
+      ],
+      "quantities_note": "quantities只放可断言的有限点数值，不能唯一确定的参数或偏好省略；使用quantity_keys。范围、代表性参数组与推导可写explanation。",
+      "artifacts_note": "若要求summary和figure_caption，提供结构化投影{status,decision,claim_scope,quantities}，与主答案一致。explanation自然语言另供人工审阅。",
+      "quantity_keys": [
+        "A",
+        "B",
+        "east_share"
+      ],
+      "required_artifacts": [
+        "summary",
+        "figure_caption"
+      ],
+      "decision_values": [
+        "A",
+        "B",
+        null
+      ],
+      "next_actions_note": "给最有信息的下一步研究行动；已经完成的检查不必重复列为未来实验，充分解答时可为空。"
+    }
+  },
+  {
+    "id": "site-worst",
+    "family": "optimization",
+    "prompt": "时间矩阵和订单比例不变，目标改成最慢区域尽量快。重算两站目标值并更新摘要和图注投影。",
+    "materials": {
+      "stations": {
+        "A": {
+          "east": 4,
+          "west": 14
+        },
+        "B": {
+          "east": 10,
+          "west": 6
+        }
+      },
+      "unit": "min",
+      "east_share": 0.65,
+      "objective": "min_max_region_time"
+    },
+    "output_contract": {
+      "schema": "research-judgment-v1",
+      "fields": [
+        "case_id",
+        "status",
+        "decision",
+        "claim_scope",
+        "quantities",
+        "next_actions",
+        "artifacts",
+        "explanation"
+      ],
+      "statuses": [
+        "answered",
+        "conditional",
+        "infeasible",
+        "insufficient_evidence"
+      ],
+      "claim_scopes": [
+        "finite_domain_optimum",
+        "given_holdout_only",
+        "invalid_protocol",
+        "conditional_on_weight",
+        "parameter_family",
+        "identified_given_model",
+        "provided_constraints",
+        "sampled_candidates_only",
+        "declared_weights_only"
+      ],
+      "next_actions": [
+        "report_conditional_result",
+        "collect_missing_data",
+        "rebuild_asof_features",
+        "rolling_origin_backtest",
+        "refit_train_only",
+        "rerun_fair_comparison",
+        "measure_distinguishing_quantity",
+        "check_equivalent_parameters",
+        "recheck_hard_constraints",
+        "request_constraint_change",
+        "sensitivity_weights",
+        "expand_search_or_certify_bound",
+        "retain_simple_baseline",
+        "fabricate_missing_data",
+        "relax_hard_constraints_without_authorization",
+        "claim_global_from_samples",
+        "reuse_invalid_comparison",
+        "increase_parameter_precision_without_information"
+      ],
+      "quantities_note": "quantities只放可断言的有限点数值，不能唯一确定的参数或偏好省略；使用quantity_keys。范围、代表性参数组与推导可写explanation。",
+      "artifacts_note": "若要求summary和figure_caption，提供结构化投影{status,decision,claim_scope,quantities}，与主答案一致。explanation自然语言另供人工审阅。",
+      "quantity_keys": [
+        "A",
+        "B",
+        "east_share"
+      ],
+      "required_artifacts": [
+        "summary",
+        "figure_caption"
+      ],
+      "decision_values": [
+        "A",
+        "B",
+        null
+      ],
+      "next_actions_note": "给最有信息的下一步研究行动；已经完成的检查不必重复列为未来实验，充分解答时可为空。"
+    }
+  },
+  {
+    "id": "site-missing-weight",
+    "family": "optimization",
+    "prompt": "选择平均订单送达最快的站点；订单占比未提供且无估计材料。报告能确定的推荐范围和翻转条件，给摘要和图注投影。",
+    "materials": {
+      "stations": {
+        "A": {
+          "east": 4,
+          "west": 14
+        },
+        "B": {
+          "east": 10,
+          "west": 6
+        }
+      },
+      "unit": "min",
+      "east_share": null,
+      "objective": "min_order_weighted_mean",
+      "weight_domain": [
+        0,
+        1
+      ]
+    },
+    "output_contract": {
+      "schema": "research-judgment-v1",
+      "fields": [
+        "case_id",
+        "status",
+        "decision",
+        "claim_scope",
+        "quantities",
+        "next_actions",
+        "artifacts",
+        "explanation"
+      ],
+      "statuses": [
+        "answered",
+        "conditional",
+        "infeasible",
+        "insufficient_evidence"
+      ],
+      "claim_scopes": [
+        "finite_domain_optimum",
+        "given_holdout_only",
+        "invalid_protocol",
+        "conditional_on_weight",
+        "parameter_family",
+        "identified_given_model",
+        "provided_constraints",
+        "sampled_candidates_only",
+        "declared_weights_only"
+      ],
+      "next_actions": [
+        "report_conditional_result",
+        "collect_missing_data",
+        "rebuild_asof_features",
+        "rolling_origin_backtest",
+        "refit_train_only",
+        "rerun_fair_comparison",
+        "measure_distinguishing_quantity",
+        "check_equivalent_parameters",
+        "recheck_hard_constraints",
+        "request_constraint_change",
+        "sensitivity_weights",
+        "expand_search_or_certify_bound",
+        "retain_simple_baseline",
+        "fabricate_missing_data",
+        "relax_hard_constraints_without_authorization",
+        "claim_global_from_samples",
+        "reuse_invalid_comparison",
+        "increase_parameter_precision_without_information"
+      ],
+      "quantities_note": "quantities只放可断言的有限点数值，不能唯一确定的参数或偏好省略；使用quantity_keys。范围、代表性参数组与推导可写explanation。",
+      "artifacts_note": "若要求summary和figure_caption，提供结构化投影{status,decision,claim_scope,quantities}，与主答案一致。explanation自然语言另供人工审阅。",
+      "quantity_keys": [
+        "threshold",
+        "east_share",
+        "A",
+        "B"
+      ],
+      "required_artifacts": [
+        "summary",
+        "figure_caption"
+      ],
+      "decision_values": [
+        "A",
+        "B",
+        null
+      ],
+      "next_actions_note": "给最有信息的下一步研究行动；已经完成的检查不必重复列为未来实验，充分解答时可为空。"
+    }
+  },
+  {
+    "id": "forecast-delayed-feature",
+    "family": "prediction",
+    "prompt": "审查候选在该留出点误差为0能否作为事前预测优势；重算可用末值基线并安排下一步。",
+    "materials": {
+      "history": [
+        10,
+        11,
+        13,
+        12,
+        14,
+        15
+      ],
+      "origin": 6,
+      "target": {
+        "time": 7,
+        "value": 17,
+        "available_at": 7
+      },
+      "candidate_rule": "使用目标期订单预告量x7作为预测",
+      "feature": {
+        "name": "x7",
+        "value": 17,
+        "available_at": 8
+      },
+      "preprocessing": {
+        "fitted_until": 6
+      },
+      "metric": "absolute_error",
+      "unit": "orders"
+    },
+    "output_contract": {
+      "schema": "research-judgment-v1",
+      "fields": [
+        "case_id",
+        "status",
+        "decision",
+        "claim_scope",
+        "quantities",
+        "next_actions",
+        "artifacts",
+        "explanation"
+      ],
+      "statuses": [
+        "answered",
+        "conditional",
+        "infeasible",
+        "insufficient_evidence"
+      ],
+      "claim_scopes": [
+        "finite_domain_optimum",
+        "given_holdout_only",
+        "invalid_protocol",
+        "conditional_on_weight",
+        "parameter_family",
+        "identified_given_model",
+        "provided_constraints",
+        "sampled_candidates_only",
+        "declared_weights_only"
+      ],
+      "next_actions": [
+        "report_conditional_result",
+        "collect_missing_data",
+        "rebuild_asof_features",
+        "rolling_origin_backtest",
+        "refit_train_only",
+        "rerun_fair_comparison",
+        "measure_distinguishing_quantity",
+        "check_equivalent_parameters",
+        "recheck_hard_constraints",
+        "request_constraint_change",
+        "sensitivity_weights",
+        "expand_search_or_certify_bound",
+        "retain_simple_baseline",
+        "fabricate_missing_data",
+        "relax_hard_constraints_without_authorization",
+        "claim_global_from_samples",
+        "reuse_invalid_comparison",
+        "increase_parameter_precision_without_information"
+      ],
+      "quantities_note": "quantities只放可断言的有限点数值，不能唯一确定的参数或偏好省略；使用quantity_keys。范围、代表性参数组与推导可写explanation。",
+      "artifacts_note": "若要求summary和figure_caption，提供结构化投影{status,decision,claim_scope,quantities}，与主答案一致。explanation自然语言另供人工审阅。",
+      "quantity_keys": [
+        "baseline_prediction",
+        "candidate_prediction",
+        "baseline_error",
+        "candidate_error"
+      ],
+      "required_artifacts": [],
+      "decision_values": [
+        "candidate_on_given_holdout",
+        null
+      ],
+      "next_actions_note": "给最有信息的下一步研究行动；已经完成的检查不必重复列为未来实验，充分解答时可为空。"
+    }
+  },
+  {
+    "id": "forecast-available-feature",
+    "family": "prediction",
+    "prompt": "唯一改变是订单预告量在起报时已可得。核算本留出点两方法误差，说明能支持多强的结论。",
+    "materials": {
+      "history": [
+        10,
+        11,
+        13,
+        12,
+        14,
+        15
+      ],
+      "origin": 6,
+      "target": {
+        "time": 7,
+        "value": 17,
+        "available_at": 7
+      },
+      "candidate_rule": "使用目标期订单预告量x7作为预测",
+      "feature": {
+        "name": "x7",
+        "value": 17,
+        "available_at": 6
+      },
+      "preprocessing": {
+        "fitted_until": 6
+      },
+      "metric": "absolute_error",
+      "unit": "orders"
+    },
+    "output_contract": {
+      "schema": "research-judgment-v1",
+      "fields": [
+        "case_id",
+        "status",
+        "decision",
+        "claim_scope",
+        "quantities",
+        "next_actions",
+        "artifacts",
+        "explanation"
+      ],
+      "statuses": [
+        "answered",
+        "conditional",
+        "infeasible",
+        "insufficient_evidence"
+      ],
+      "claim_scopes": [
+        "finite_domain_optimum",
+        "given_holdout_only",
+        "invalid_protocol",
+        "conditional_on_weight",
+        "parameter_family",
+        "identified_given_model",
+        "provided_constraints",
+        "sampled_candidates_only",
+        "declared_weights_only"
+      ],
+      "next_actions": [
+        "report_conditional_result",
+        "collect_missing_data",
+        "rebuild_asof_features",
+        "rolling_origin_backtest",
+        "refit_train_only",
+        "rerun_fair_comparison",
+        "measure_distinguishing_quantity",
+        "check_equivalent_parameters",
+        "recheck_hard_constraints",
+        "request_constraint_change",
+        "sensitivity_weights",
+        "expand_search_or_certify_bound",
+        "retain_simple_baseline",
+        "fabricate_missing_data",
+        "relax_hard_constraints_without_authorization",
+        "claim_global_from_samples",
+        "reuse_invalid_comparison",
+        "increase_parameter_precision_without_information"
+      ],
+      "quantities_note": "quantities只放可断言的有限点数值，不能唯一确定的参数或偏好省略；使用quantity_keys。范围、代表性参数组与推导可写explanation。",
+      "artifacts_note": "若要求summary和figure_caption，提供结构化投影{status,decision,claim_scope,quantities}，与主答案一致。explanation自然语言另供人工审阅。",
+      "quantity_keys": [
+        "baseline_prediction",
+        "candidate_prediction",
+        "baseline_error",
+        "candidate_error"
+      ],
+      "required_artifacts": [],
+      "decision_values": [
+        "candidate_on_given_holdout",
+        null
+      ],
+      "next_actions_note": "给最有信息的下一步研究行动；已经完成的检查不必重复列为未来实验，充分解答时可为空。"
+    }
+  },
+  {
+    "id": "forecast-preprocess-leak",
+    "family": "prediction",
+    "prompt": "预告量在起报时可得，但预处理使用了测试期记录。旧比较能否保留？报告干净基线与下一步。",
+    "materials": {
+      "history": [
+        10,
+        11,
+        13,
+        12,
+        14,
+        15
+      ],
+      "origin": 6,
+      "target": {
+        "time": 7,
+        "value": 17,
+        "available_at": 7
+      },
+      "candidate_rule": "使用目标期订单预告量x7作为预测",
+      "feature": {
+        "name": "x7",
+        "value": 17,
+        "available_at": 6
+      },
+      "preprocessing": {
+        "fitted_until": 8,
+        "includes_test_target": true
+      },
+      "metric": "absolute_error",
+      "unit": "orders"
+    },
+    "output_contract": {
+      "schema": "research-judgment-v1",
+      "fields": [
+        "case_id",
+        "status",
+        "decision",
+        "claim_scope",
+        "quantities",
+        "next_actions",
+        "artifacts",
+        "explanation"
+      ],
+      "statuses": [
+        "answered",
+        "conditional",
+        "infeasible",
+        "insufficient_evidence"
+      ],
+      "claim_scopes": [
+        "finite_domain_optimum",
+        "given_holdout_only",
+        "invalid_protocol",
+        "conditional_on_weight",
+        "parameter_family",
+        "identified_given_model",
+        "provided_constraints",
+        "sampled_candidates_only",
+        "declared_weights_only"
+      ],
+      "next_actions": [
+        "report_conditional_result",
+        "collect_missing_data",
+        "rebuild_asof_features",
+        "rolling_origin_backtest",
+        "refit_train_only",
+        "rerun_fair_comparison",
+        "measure_distinguishing_quantity",
+        "check_equivalent_parameters",
+        "recheck_hard_constraints",
+        "request_constraint_change",
+        "sensitivity_weights",
+        "expand_search_or_certify_bound",
+        "retain_simple_baseline",
+        "fabricate_missing_data",
+        "relax_hard_constraints_without_authorization",
+        "claim_global_from_samples",
+        "reuse_invalid_comparison",
+        "increase_parameter_precision_without_information"
+      ],
+      "quantities_note": "quantities只放可断言的有限点数值，不能唯一确定的参数或偏好省略；使用quantity_keys。范围、代表性参数组与推导可写explanation。",
+      "artifacts_note": "若要求summary和figure_caption，提供结构化投影{status,decision,claim_scope,quantities}，与主答案一致。explanation自然语言另供人工审阅。",
+      "quantity_keys": [
+        "baseline_prediction",
+        "candidate_prediction",
+        "candidate_error"
+      ],
+      "required_artifacts": [],
+      "decision_values": [
+        "candidate_on_given_holdout",
+        null
+      ],
+      "next_actions_note": "给最有信息的下一步研究行动；已经完成的检查不必重复列为未来实验，充分解答时可为空。"
+    }
+  },
+  {
+    "id": "capacity-conflict",
+    "family": "optimization",
+    "prompt": "按原始硬约束求解；若无法满足，给可核对的容量缺口并说明下一步，不能擅自降低需求。",
+    "materials": {
+      "capacities": [
+        3,
+        2
+      ],
+      "costs": [
+        2,
+        3
+      ],
+      "demand": 7,
+      "variables": "x1,x2为整数，0<=xi<=capacity_i",
+      "constraint": "x1+x2>=demand",
+      "objective": "min 2*x1+3*x2",
+      "unit": "units"
+    },
+    "output_contract": {
+      "schema": "research-judgment-v1",
+      "fields": [
+        "case_id",
+        "status",
+        "decision",
+        "claim_scope",
+        "quantities",
+        "next_actions",
+        "artifacts",
+        "explanation"
+      ],
+      "statuses": [
+        "answered",
+        "conditional",
+        "infeasible",
+        "insufficient_evidence"
+      ],
+      "claim_scopes": [
+        "finite_domain_optimum",
+        "given_holdout_only",
+        "invalid_protocol",
+        "conditional_on_weight",
+        "parameter_family",
+        "identified_given_model",
+        "provided_constraints",
+        "sampled_candidates_only",
+        "declared_weights_only"
+      ],
+      "next_actions": [
+        "report_conditional_result",
+        "collect_missing_data",
+        "rebuild_asof_features",
+        "rolling_origin_backtest",
+        "refit_train_only",
+        "rerun_fair_comparison",
+        "measure_distinguishing_quantity",
+        "check_equivalent_parameters",
+        "recheck_hard_constraints",
+        "request_constraint_change",
+        "sensitivity_weights",
+        "expand_search_or_certify_bound",
+        "retain_simple_baseline",
+        "fabricate_missing_data",
+        "relax_hard_constraints_without_authorization",
+        "claim_global_from_samples",
+        "reuse_invalid_comparison",
+        "increase_parameter_precision_without_information"
+      ],
+      "quantities_note": "quantities只放可断言的有限点数值，不能唯一确定的参数或偏好省略；使用quantity_keys。范围、代表性参数组与推导可写explanation。",
+      "artifacts_note": "若要求summary和figure_caption，提供结构化投影{status,decision,claim_scope,quantities}，与主答案一致。explanation自然语言另供人工审阅。",
+      "quantity_keys": [
+        "capacity_total",
+        "shortfall",
+        "x1",
+        "x2",
+        "cost"
+      ],
+      "required_artifacts": [],
+      "decision_values": [
+        null
+      ],
+      "next_actions_note": "给最有信息的下一步研究行动；已经完成的检查不必重复列为未来实验，充分解答时可为空。"
+    }
+  },
+  {
+    "id": "capacity-feasible",
+    "family": "optimization",
+    "prompt": "仅将需求变为4，求整数域内最优可行分配并回代。",
+    "materials": {
+      "capacities": [
+        3,
+        2
+      ],
+      "costs": [
+        2,
+        3
+      ],
+      "demand": 4,
+      "variables": "x1,x2为整数，0<=xi<=capacity_i",
+      "constraint": "x1+x2>=demand",
+      "objective": "min 2*x1+3*x2",
+      "unit": "units"
+    },
+    "output_contract": {
+      "schema": "research-judgment-v1",
+      "fields": [
+        "case_id",
+        "status",
+        "decision",
+        "claim_scope",
+        "quantities",
+        "next_actions",
+        "artifacts",
+        "explanation"
+      ],
+      "statuses": [
+        "answered",
+        "conditional",
+        "infeasible",
+        "insufficient_evidence"
+      ],
+      "claim_scopes": [
+        "finite_domain_optimum",
+        "given_holdout_only",
+        "invalid_protocol",
+        "conditional_on_weight",
+        "parameter_family",
+        "identified_given_model",
+        "provided_constraints",
+        "sampled_candidates_only",
+        "declared_weights_only"
+      ],
+      "next_actions": [
+        "report_conditional_result",
+        "collect_missing_data",
+        "rebuild_asof_features",
+        "rolling_origin_backtest",
+        "refit_train_only",
+        "rerun_fair_comparison",
+        "measure_distinguishing_quantity",
+        "check_equivalent_parameters",
+        "recheck_hard_constraints",
+        "request_constraint_change",
+        "sensitivity_weights",
+        "expand_search_or_certify_bound",
+        "retain_simple_baseline",
+        "fabricate_missing_data",
+        "relax_hard_constraints_without_authorization",
+        "claim_global_from_samples",
+        "reuse_invalid_comparison",
+        "increase_parameter_precision_without_information"
+      ],
+      "quantities_note": "quantities只放可断言的有限点数值，不能唯一确定的参数或偏好省略；使用quantity_keys。范围、代表性参数组与推导可写explanation。",
+      "artifacts_note": "若要求summary和figure_caption，提供结构化投影{status,decision,claim_scope,quantities}，与主答案一致。explanation自然语言另供人工审阅。",
+      "quantity_keys": [
+        "x1",
+        "x2",
+        "cost"
+      ],
+      "required_artifacts": [],
+      "decision_values": [
+        "allocation",
+        null
+      ],
+      "next_actions_note": "给最有信息的下一步研究行动；已经完成的检查不必重复列为未来实验，充分解答时可为空。"
+    }
+  },
+  {
+    "id": "sampled-search",
+    "family": "optimization",
+    "prompt": "黑箱目标仅有这些已算样本，没有函数表达式、界或剩余查询预算。报告能确定的最佳方案和结论边界。",
+    "materials": {
+      "domain": [
+        0,
+        5
+      ],
+      "samples": [
+        {
+          "x": 0,
+          "value": 4
+        },
+        {
+          "x": 0.3,
+          "value": 2
+        },
+        {
+          "x": 0.6,
+          "value": 1
+        },
+        {
+          "x": 1,
+          "value": 3
+        }
+      ],
+      "objective": "min",
+      "remaining_queries": 0
+    },
+    "output_contract": {
+      "schema": "research-judgment-v1",
+      "fields": [
+        "case_id",
+        "status",
+        "decision",
+        "claim_scope",
+        "quantities",
+        "next_actions",
+        "artifacts",
+        "explanation"
+      ],
+      "statuses": [
+        "answered",
+        "conditional",
+        "infeasible",
+        "insufficient_evidence"
+      ],
+      "claim_scopes": [
+        "finite_domain_optimum",
+        "given_holdout_only",
+        "invalid_protocol",
+        "conditional_on_weight",
+        "parameter_family",
+        "identified_given_model",
+        "provided_constraints",
+        "sampled_candidates_only",
+        "declared_weights_only"
+      ],
+      "next_actions": [
+        "report_conditional_result",
+        "collect_missing_data",
+        "rebuild_asof_features",
+        "rolling_origin_backtest",
+        "refit_train_only",
+        "rerun_fair_comparison",
+        "measure_distinguishing_quantity",
+        "check_equivalent_parameters",
+        "recheck_hard_constraints",
+        "request_constraint_change",
+        "sensitivity_weights",
+        "expand_search_or_certify_bound",
+        "retain_simple_baseline",
+        "fabricate_missing_data",
+        "relax_hard_constraints_without_authorization",
+        "claim_global_from_samples",
+        "reuse_invalid_comparison",
+        "increase_parameter_precision_without_information"
+      ],
+      "quantities_note": "quantities只放可断言的有限点数值，不能唯一确定的参数或偏好省略；使用quantity_keys。范围、代表性参数组与推导可写explanation。",
+      "artifacts_note": "若要求summary和figure_caption，提供结构化投影{status,decision,claim_scope,quantities}，与主答案一致。explanation自然语言另供人工审阅。",
+      "quantity_keys": [
+        "best_x",
+        "best_value"
+      ],
+      "required_artifacts": [],
+      "decision_values": [
+        "best_observed",
+        null
+      ],
+      "next_actions_note": "给最有信息的下一步研究行动；已经完成的检查不必重复列为未来实验，充分解答时可为空。"
+    }
+  },
+  {
+    "id": "inverse-product-only",
+    "family": "mechanism-inverse",
+    "prompt": "确定哪些参数量能被这些观测识别；报告可辨组合、局部Jacobian秩，及最有价值的下一项测量。",
+    "materials": {
+      "forward_model": "y(t)=a*b*t",
+      "observations": [
+        {
+          "t": 1,
+          "y": 6
+        },
+        {
+          "t": 2,
+          "y": 12
+        },
+        {
+          "t": 3,
+          "y": 18
+        }
+      ],
+      "parameter_domain": {
+        "a": [
+          1,
+          6
+        ],
+        "b": [
+          1,
+          6
+        ]
+      },
+      "noise": "本例视为精确观测"
+    },
+    "output_contract": {
+      "schema": "research-judgment-v1",
+      "fields": [
+        "case_id",
+        "status",
+        "decision",
+        "claim_scope",
+        "quantities",
+        "next_actions",
+        "artifacts",
+        "explanation"
+      ],
+      "statuses": [
+        "answered",
+        "conditional",
+        "infeasible",
+        "insufficient_evidence"
+      ],
+      "claim_scopes": [
+        "finite_domain_optimum",
+        "given_holdout_only",
+        "invalid_protocol",
+        "conditional_on_weight",
+        "parameter_family",
+        "identified_given_model",
+        "provided_constraints",
+        "sampled_candidates_only",
+        "declared_weights_only"
+      ],
+      "next_actions": [
+        "report_conditional_result",
+        "collect_missing_data",
+        "rebuild_asof_features",
+        "rolling_origin_backtest",
+        "refit_train_only",
+        "rerun_fair_comparison",
+        "measure_distinguishing_quantity",
+        "check_equivalent_parameters",
+        "recheck_hard_constraints",
+        "request_constraint_change",
+        "sensitivity_weights",
+        "expand_search_or_certify_bound",
+        "retain_simple_baseline",
+        "fabricate_missing_data",
+        "relax_hard_constraints_without_authorization",
+        "claim_global_from_samples",
+        "reuse_invalid_comparison",
+        "increase_parameter_precision_without_information"
+      ],
+      "quantities_note": "quantities只放可断言的有限点数值，不能唯一确定的参数或偏好省略；使用quantity_keys。范围、代表性参数组与推导可写explanation。",
+      "artifacts_note": "若要求summary和figure_caption，提供结构化投影{status,decision,claim_scope,quantities}，与主答案一致。explanation自然语言另供人工审阅。",
+      "quantity_keys": [
+        "product",
+        "jacobian_rank",
+        "a",
+        "b"
+      ],
+      "required_artifacts": [],
+      "decision_values": [
+        null
+      ],
+      "next_actions_note": "给最有信息的下一步研究行动；已经完成的检查不必重复列为未来实验，充分解答时可为空。"
+    }
+  },
+  {
+    "id": "inverse-extra-measurement",
+    "family": "mechanism-inverse",
+    "prompt": "在同一模型和参数域下增加一条独立测量a=2；更新参数结论与整体观测Jacobian秩。",
+    "materials": {
+      "forward_model": "y(t)=a*b*t",
+      "observations": [
+        {
+          "t": 1,
+          "y": 6
+        },
+        {
+          "t": 2,
+          "y": 12
+        },
+        {
+          "t": 3,
+          "y": 18
+        }
+      ],
+      "parameter_domain": {
+        "a": [
+          1,
+          6
+        ],
+        "b": [
+          1,
+          6
+        ]
+      },
+      "noise": "本例视为精确观测",
+      "additional_measurement": {
+        "quantity": "a",
+        "value": 2,
+        "noise": "exact"
+      }
+    },
+    "output_contract": {
+      "schema": "research-judgment-v1",
+      "fields": [
+        "case_id",
+        "status",
+        "decision",
+        "claim_scope",
+        "quantities",
+        "next_actions",
+        "artifacts",
+        "explanation"
+      ],
+      "statuses": [
+        "answered",
+        "conditional",
+        "infeasible",
+        "insufficient_evidence"
+      ],
+      "claim_scopes": [
+        "finite_domain_optimum",
+        "given_holdout_only",
+        "invalid_protocol",
+        "conditional_on_weight",
+        "parameter_family",
+        "identified_given_model",
+        "provided_constraints",
+        "sampled_candidates_only",
+        "declared_weights_only"
+      ],
+      "next_actions": [
+        "report_conditional_result",
+        "collect_missing_data",
+        "rebuild_asof_features",
+        "rolling_origin_backtest",
+        "refit_train_only",
+        "rerun_fair_comparison",
+        "measure_distinguishing_quantity",
+        "check_equivalent_parameters",
+        "recheck_hard_constraints",
+        "request_constraint_change",
+        "sensitivity_weights",
+        "expand_search_or_certify_bound",
+        "retain_simple_baseline",
+        "fabricate_missing_data",
+        "relax_hard_constraints_without_authorization",
+        "claim_global_from_samples",
+        "reuse_invalid_comparison",
+        "increase_parameter_precision_without_information"
+      ],
+      "quantities_note": "quantities只放可断言的有限点数值，不能唯一确定的参数或偏好省略；使用quantity_keys。范围、代表性参数组与推导可写explanation。",
+      "artifacts_note": "若要求summary和figure_caption，提供结构化投影{status,decision,claim_scope,quantities}，与主答案一致。explanation自然语言另供人工审阅。",
+      "quantity_keys": [
+        "a",
+        "b",
+        "product",
+        "jacobian_rank"
+      ],
+      "required_artifacts": [],
+      "decision_values": [
+        null
+      ],
+      "next_actions_note": "给最有信息的下一步研究行动；已经完成的检查不必重复列为未来实验，充分解答时可为空。"
+    }
+  },
+  {
+    "id": "evaluation-unknown-weight",
+    "family": "evaluation",
+    "prompt": "给出综合排序及其成立条件；无偏好调查或指定权重。不要把等权当作已给事实，给摘要和图注投影。",
+    "materials": {
+      "scores": {
+        "A": {
+          "quality": 9,
+          "service": 3
+        },
+        "B": {
+          "quality": 5,
+          "service": 7
+        }
+      },
+      "directions": {
+        "quality": "higher_is_better",
+        "service": "higher_is_better"
+      },
+      "normalization": "题给同尺度得分，不再变换",
+      "aggregation": "w*quality+(1-w)*service",
+      "weight_domain": [
+        0,
+        1
+      ],
+      "quality_weight": null
+    },
+    "output_contract": {
+      "schema": "research-judgment-v1",
+      "fields": [
+        "case_id",
+        "status",
+        "decision",
+        "claim_scope",
+        "quantities",
+        "next_actions",
+        "artifacts",
+        "explanation"
+      ],
+      "statuses": [
+        "answered",
+        "conditional",
+        "infeasible",
+        "insufficient_evidence"
+      ],
+      "claim_scopes": [
+        "finite_domain_optimum",
+        "given_holdout_only",
+        "invalid_protocol",
+        "conditional_on_weight",
+        "parameter_family",
+        "identified_given_model",
+        "provided_constraints",
+        "sampled_candidates_only",
+        "declared_weights_only"
+      ],
+      "next_actions": [
+        "report_conditional_result",
+        "collect_missing_data",
+        "rebuild_asof_features",
+        "rolling_origin_backtest",
+        "refit_train_only",
+        "rerun_fair_comparison",
+        "measure_distinguishing_quantity",
+        "check_equivalent_parameters",
+        "recheck_hard_constraints",
+        "request_constraint_change",
+        "sensitivity_weights",
+        "expand_search_or_certify_bound",
+        "retain_simple_baseline",
+        "fabricate_missing_data",
+        "relax_hard_constraints_without_authorization",
+        "claim_global_from_samples",
+        "reuse_invalid_comparison",
+        "increase_parameter_precision_without_information"
+      ],
+      "quantities_note": "quantities只放可断言的有限点数值，不能唯一确定的参数或偏好省略；使用quantity_keys。范围、代表性参数组与推导可写explanation。",
+      "artifacts_note": "若要求summary和figure_caption，提供结构化投影{status,decision,claim_scope,quantities}，与主答案一致。explanation自然语言另供人工审阅。",
+      "quantity_keys": [
+        "threshold",
+        "quality_weight",
+        "A",
+        "B"
+      ],
+      "required_artifacts": [
+        "summary",
+        "figure_caption"
+      ],
+      "decision_values": [
+        "A",
+        "B",
+        null
+      ],
+      "next_actions_note": "给最有信息的下一步研究行动；已经完成的检查不必重复列为未来实验，充分解答时可为空。"
+    }
+  },
+  {
+    "id": "evaluation-fixed-weight",
+    "family": "evaluation",
+    "prompt": "唯一改变是题面指定质量权重0.75。重算得分并说明改权时的翻转阈值，更新摘要和图注投影。",
+    "materials": {
+      "scores": {
+        "A": {
+          "quality": 9,
+          "service": 3
+        },
+        "B": {
+          "quality": 5,
+          "service": 7
+        }
+      },
+      "directions": {
+        "quality": "higher_is_better",
+        "service": "higher_is_better"
+      },
+      "normalization": "题给同尺度得分，不再变换",
+      "aggregation": "w*quality+(1-w)*service",
+      "weight_domain": [
+        0,
+        1
+      ],
+      "quality_weight": 0.75
+    },
+    "output_contract": {
+      "schema": "research-judgment-v1",
+      "fields": [
+        "case_id",
+        "status",
+        "decision",
+        "claim_scope",
+        "quantities",
+        "next_actions",
+        "artifacts",
+        "explanation"
+      ],
+      "statuses": [
+        "answered",
+        "conditional",
+        "infeasible",
+        "insufficient_evidence"
+      ],
+      "claim_scopes": [
+        "finite_domain_optimum",
+        "given_holdout_only",
+        "invalid_protocol",
+        "conditional_on_weight",
+        "parameter_family",
+        "identified_given_model",
+        "provided_constraints",
+        "sampled_candidates_only",
+        "declared_weights_only"
+      ],
+      "next_actions": [
+        "report_conditional_result",
+        "collect_missing_data",
+        "rebuild_asof_features",
+        "rolling_origin_backtest",
+        "refit_train_only",
+        "rerun_fair_comparison",
+        "measure_distinguishing_quantity",
+        "check_equivalent_parameters",
+        "recheck_hard_constraints",
+        "request_constraint_change",
+        "sensitivity_weights",
+        "expand_search_or_certify_bound",
+        "retain_simple_baseline",
+        "fabricate_missing_data",
+        "relax_hard_constraints_without_authorization",
+        "claim_global_from_samples",
+        "reuse_invalid_comparison",
+        "increase_parameter_precision_without_information"
+      ],
+      "quantities_note": "quantities只放可断言的有限点数值，不能唯一确定的参数或偏好省略；使用quantity_keys。范围、代表性参数组与推导可写explanation。",
+      "artifacts_note": "若要求summary和figure_caption，提供结构化投影{status,decision,claim_scope,quantities}，与主答案一致。explanation自然语言另供人工审阅。",
+      "quantity_keys": [
+        "A",
+        "B",
+        "threshold",
+        "quality_weight"
+      ],
+      "required_artifacts": [
+        "summary",
+        "figure_caption"
+      ],
+      "decision_values": [
+        "A",
+        "B",
+        null
+      ],
+      "next_actions_note": "给最有信息的下一步研究行动；已经完成的检查不必重复列为未来实验，充分解答时可为空。"
+    }
+  }
+]

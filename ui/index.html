@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self'; font-src 'self'">
+<title>羲和 Agent</title>
+<!-- 启动令牌经 meta 注入（CSP script-src 'self' 禁内联脚本，外部 app.js 读取本字段） -->
+<meta name="xihe-token" id="xiheToken" content="__XIHE_TOKEN_PLACEHOLDER__">
+<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/usage.css">
+<link rel="icon" type="image/svg+xml" href="/static/jinwu.svg">
+<script src="/static/appearance.js"></script>
+<script src="/static/jinwu-motion.js"></script>
+</head>
+<body>
+<div id="app">
+  <!-- 标题栏 -->
+  <header id="titlebar">
+    <div class="brand"><img class="brand-mark" src="/static/jinwu.svg" alt="金乌栖扶桑"> 羲和 <span class="sub">XiHe Agent · DeepSeek V4 运行时</span></div>
+    <div class="title-mid" id="sessionTitle">未打开会话</div>
+    <div class="title-right">
+      <span class="pill" id="approvalPill" title="权限：完全访问=直接执行；请求审批=每个写文件/跑命令/花钱的操作先弹卡等你批准（点此切换）" style="display:none">🔓 完全访问</span>
+      <span class="pill" id="contestPill" title="比赛时钟：剩余时间与当前阶段" style="display:none">⏱ —</span>
+      <span class="pill" id="collabPill" title="点击展开协作模式" style="display:none">🤝 人机协同</span>
+      <span class="pill" id="effortPill" title="点击展开工作模式" style="display:none" aria-haspopup="true" aria-expanded="false">⚡ 快速</span>
+      <div id="effortMenu" class="effort-menu" hidden role="menu" aria-label="工作模式">
+        <button type="button" data-effort="fast" role="menuitem"><b>⚡ 快速</b><span>日常任务，控制调用量</span></button>
+        <button type="button" data-effort="deep" role="menuitem"><b>🔬 深度</b><span>辩论、树搜索与多轮验证</span></button>
+        <button type="button" data-effort="extreme" role="menuitem"><b>🧬 极致</b><span>多职责协作、红队与审计</span></button>
+      </div>
+      <span class="pill judge-pill" id="judgePill" title="判断层状态；点击打开设置" role="button" tabindex="0" aria-haspopup="dialog">Jev 关闭</span>
+      <span class="pill" id="modelPill" title="点击切换模型">deepseek-flash</span>
+      <span class="pill" id="reasoningPill" title="最近一次模型请求的推理配置；API 接受不代表中转站最终执行" style="display:none;max-width:145px;overflow:hidden;text-overflow:ellipsis;cursor:default">推理档位</span>
+      <button class="ghost" id="btnReasoningSettings" title="调整模型推理强度" aria-label="调整模型推理强度">推理强度</button>
+      <button class="ghost" id="btnSkills" title="技能库">📚 技能</button>
+      <button class="ghost" id="btnTheme" title="切换深浅主题" aria-label="切换深浅主题">◐</button>
+      <button class="ghost" id="btnSettings" title="设置" aria-label="设置">⚙</button>
+    </div>
+  </header>
+
+  <section id="jobStatusBar" class="job-status-bar" role="status" aria-live="polite" hidden>
+    <span class="job-status-icon" aria-hidden="true">⏳</span>
+    <span id="jobStatusText">后台任务</span>
+    <button class="ghost tiny" id="btnOpenJobs" type="button">查看任务</button>
+  </section>
+
+  <div id="main">
+    <!-- 左侧：会话 -->
+    <aside id="sidebar">
+      <label class="proj-pick">项目
+        <select id="projSwitch" title="切换项目：会话列表与右侧交付物都只显示这个项目"></select>
+      </label>
+      <button id="btnProjectPlan" class="ghost" type="button" title="从模板库选择方案，或编辑、导入和导出项目配置">🧩 模板库 / 方案</button>
+      <button id="btnContest" class="primary">🏁 开始比赛</button>
+      <button id="btnNewSession">＋ 新建会话</button>
+      <div class="mode-hint" id="modeHint"></div>
+      <div id="sessionList"></div>
+      <div class="sidebar-footer">
+        <button class="ghost" id="btnJobs"><span aria-hidden="true">⏳</span> 后台任务 <span class="mini" id="jobBadge"></span></button>
+        <button class="ghost" id="btnUsage"><span aria-hidden="true">▥</span> 使用统计 <span class="mini">所有项目</span></button>
+        <div id="extQuota" class="mini"></div>
+      </div>
+    </aside>
+
+    <!-- 中间：聊天 -->
+    <section id="chatPane">
+      <div id="workBar" class="workbar" style="display:none">
+        <span class="spin">⏳</span>
+        <span id="workText">待命中</span>
+        <span class="mini" id="workMeta"></span>
+      </div>
+      <div id="chatStream"></div>
+      <div id="composerWrap">
+        <div class="task-focus-bar">
+          <button id="btnLocalTask" class="ghost tiny" type="button" title="暂停当前主线，在同一聊天先处理小问题；保留当前模型，可在顶部切换 Flash">临时小任务</button>
+          <span id="taskFocusHint" class="mini" role="status">可随时暂停主线，先处理一个小问题</span>
+          <button id="btnReturnMain" class="ghost tiny" type="button" hidden>返回主线</button>
+        </div>
+        <div id="attachRow"></div>
+        <div id="attachStatus" class="mini" role="status" aria-live="polite" hidden></div>
+        <div id="composer">
+          <button id="btnAttach" title="添加图片（识图桥自动转文字）">📎</button>
+          <textarea id="input" rows="1" placeholder="给羲和下达任务…（Enter 发送 / Shift+Enter 换行）"></textarea>
+          <button id="btnSend" class="primary">发送</button>
+          <button id="btnStop" class="danger" style="display:none">■ 停止</button>
+        </div>
+        <div class="composer-hint">文件操作锁定在 <span id="wsPath"></span> · 删除进回收站 · 问答卡片弹出于此处</div>
+      </div>
+    </section>
+
+    <!-- 右侧：仪表盘 -->
+    <aside id="dashPane">
+      <div class="card" id="usageCard">
+        <h3>本会话用量</h3>
+        <div class="row2"><span>输入 <b id="tIn">0</b></span><span>输出 <b id="tOut">0</b></span><span>调用 <b id="tCalls">0</b></span></div>
+        <div class="row2"><span title="通道已上报缓存读取token ÷ 累计输入token。未返回缓存字段的请求不提供命中证据，因此此值不能直接视为实际缓存命中率；展开缓存诊断可查看已上报部分和未知数量。">缓存上报占比 <b id="tHit">0%</b></span><span>识图 <b id="tVision">0</b> 次</span></div>
+        <details id="cacheDiagnostics"><summary>缓存诊断</summary>
+          <button type="button" id="btnRefreshCache" class="ghost tiny">刷新诊断</button>
+          <div id="cacheDiagnosticsBody" class="mini" role="status" aria-live="polite">打开会话后查看。</div>
+        </details>
+      </div>
+      <div class="card" id="acceptanceCard">
+        <h3>项目验收 <button type="button" id="btnRefreshAcceptance" class="ghost tiny">刷新</button></h3>
+        <select id="acceptanceSession" aria-label="验收会话"></select>
+        <p class="mini" id="acceptanceProfile"></p>
+        <p id="acceptanceHeadline" role="status" aria-live="polite">打开项目后显示实际验收状态</p>
+        <div id="acceptanceStages"></div>
+        <details id="acceptanceProblems"><summary>待处理与证据</summary><div id="acceptanceDetails" class="mini"></div></details>
+          <details id="claimTracePanel"><summary>主张与图表追溯 <span id="claimTraceStatus" class="mini">未读取</span></summary>
+            <div id="claimTraceBody" class="mini" role="status" aria-live="polite">打开会话后查看。</div>
+          </details>
+        <div class="acceptance-actions">
+          <button type="button" id="btnRetryTask" class="ghost tiny" disabled>从已有产物恢复</button>
+          <button type="button" id="btnFreezeRelease" class="ghost tiny" disabled>固定交付版本</button>
+        </div>
+        <p class="mini">按所选会话范围验收；技术通过后仍需据实完成人工审核与提交。</p>
+      </div>
+      <div class="card" id="deliverCard">
+        <h3>交付物 <span class="tag" id="deliverProj" title="当前会话所属项目目录">—</span>
+          <button class="ghost tiny" id="btnRevealProj" title="在资源管理器中打开项目文件夹">📂 文件夹</button>
+        </h3>
+        <div id="deliverList" class="mini">（暂无）</div>
+        <div class="mini" id="deliverHint">点文件名用系统程序打开 · 点 📂 定位所在文件夹</div>
+      </div>
+      <div class="card">
+        <h3>任务清单</h3>
+        <div id="todoList" class="mini">（暂无）</div>
+      </div>
+      <div class="card">
+        <h3>项目记忆</h3>
+        <div id="memList" class="mini">（暂无）</div>
+      </div>
+      <div class="card">
+        <h3>外部调度</h3>
+        <div id="extPanel" class="mini"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+<div id="jobNotice" class="job-notice" role="status" aria-live="polite" hidden></div>
+
+<!-- 新建会话弹窗 -->
+<dialog id="dlgNew">
+  <h3>新建会话</h3>
+  <div class="form" style="margin-bottom:8px">
+    <label>项目文件夹（每个项目 = 一个独立的工作目录，互不覆盖）
+      <select id="nsProject"></select>
+    </label>
+    <div id="nsNewProjectRow" style="display:none">
+      <label>新项目名称
+        <input id="nsProjectName" placeholder="如 2026国赛A题 / 华数杯C题">
+      </label>
+      <label>项目文件夹（可选 · 就地用你电脑上已有的文件夹）
+        <div style="display:flex;gap:6px">
+          <input id="nsProjectDir" placeholder="不填 = 放在程序内的 workspace/projects/" style="flex:1">
+          <button id="nsPickDir" type="button">📁 选择…</button>
+        </div>
+      </label>
+      <div class="mini">选了这个文件夹后，模型的文件操作就锁在这个文件夹里就地干活；<b>该文件夹里已有的文件不会被移动或删除</b>（自动备份/回收站在外部项目下整体停用）。程序目录、系统目录、磁盘根目录不可选。</div>
+    </div>
+    <div class="mini">不选就沿用最近一个项目；想开新题请选「＋ 新建项目…」，否则所有会话会挤在同一个文件夹里。</div>
+    <label>项目赛事档案<select id="nsContestKind"><option value="">继承项目档案</option></select></label>
+    <div class="grid2">
+      <label>届次<input id="nsEdition" placeholder="未知留空"></label>
+      <label>阶段<input id="nsStage" placeholder="如初赛，未知留空"></label>
+      <label>赛道<input id="nsTrack" placeholder="如 B，未知留空"></label>
+        <label>美赛控制号<input id="nsControlNumber" inputmode="numeric" maxlength="12" placeholder="取得后填写，未知留空"></label>
+      <label>本会话任务<select id="nsTaskScope"><option value="solve">求解</option><option value="blind">独立盲测</option><option value="review">只读审稿</option><option value="delivery">最终交付</option></select></label>
+    </div>
+    <div class="mini" id="nsContestHint">赛事和规则由项目保存；新会话独立记录计算与验收状态。</div>
+  </div>
+  <div class="mode-grid">
+    <button class="mode-card" data-mode="math"><b>📐 数学建模</b><span>按赛事档案加载建模技能，读题、推导、实验与论文写作</span></button>
+    <button class="mode-card" data-mode="code"><b>⌨ 软件编程</b><span>小步快跑、写完即验证，锁死本文件夹</span></button>
+    <button class="mode-card" data-mode="free"><b>💬 自由对话</b><span>通用助手，带全部工具</span></button>
+  </div>
+  <div class="btnrow"><button id="btnCloseNew">取消</button></div>
+</dialog>
+
+<!-- 开始比赛弹窗：选题目文件夹 → 选模式 → 一键开工 -->
+<dialog id="dlgContest">
+  <h3>🏁 开始比赛</h3>
+  <div class="form">
+    <label>题目文件夹（放题目 PDF 和全部附件）
+      <div style="display:flex;gap:6px"><input id="ctDir" placeholder="如：项目文件夹/C题" style="flex:1"><button id="ctPick" type="button">选择…</button></div>
+    </label>
+    <label>比赛模式
+      <select id="ctMode">
+        <option value="collab">🤝 人机协同 —— 选模型/方法/关键假设时弹卡片，你来拍板（时间充裕用）</option>
+        <option value="auto">🤖 全自动 —— 每个选择自动采用推荐项，一路做到论文（时间来不及用）</option>
+      </select>
+    </label>
+    <label>赛事流程
+      <select id="ctContestKind">
+        <option value="auto">按项目识别（不确定时使用通用流程）</option>
+        <option value="generic">通用赛事（以当届规则为准）</option>
+      </select>
+      <div id="ctPackageWarnings" class="mini" hidden></div>
+    </label>
+    <label>主编程语言
+      <select id="ctLang"><option value="python">Python（推荐）</option><option value="matlab">MATLAB</option></select>
+    </label>
+    <label>算力档位（三档，越往下越贵）
+      <select id="ctEffort">
+        <option value="fast">⚡ 快速 —— 日常算力，够用就跑（默认）</option>
+        <option value="deep">🔬 深度 —— 解锁辩论/树搜索/求解回改/视觉迭代，花得多但结论更硬</option>
+        <option value="extreme">🧬 极致 —— 三固定职责 + 按需动态池 + 红队与审计，全部证据门禁照旧</option>
+      </select>
+    </label>
+    <label>本轮剩余工作时间（小时，或填写真实截止）
+      <select id="ctHours">
+        <option value="8">8 小时（华数杯/校赛）</option>
+        <option value="4">4 小时</option>
+        <option value="1">1 小时（快速演练）</option>
+        <option value="" selected>不设截止（请填真实截止或选择剩余时间）</option>
+      </select>
+    </label>
+    <label>真实截止时间（带时区，例如 2026-11-05T20:00:00+08:00；优先于小时数）
+      <input id="ctDeadline" placeholder="已有赛程优先填实际截止时间">
+    </label>
+    <label>迭代圈数上限（全自动模式）
+      <select id="ctRounds">
+        <option value="3">3 圈（默认，每圈有花费上限）</option>
+        <option value="1">1 圈</option>
+        <option value="5">5 圈</option>
+      </select>
+    </label>
+    <div class="mini">点「开工」后：附件复制进独立项目文件夹 → 按赛事档案铺论文模板 → 自动发送开工指令。未识别的赛事使用通用流程，并核对当届规则。
+运行中可随时点顶部模式按钮切换全自动 / 人机协同。</div>
+    <div class="btnrow"><button class="primary" id="ctGo">开工</button><button id="ctCancel">取消</button></div>
+  </div>
+</dialog>
+
+<!-- 设置弹窗 -->
+<dialog id="dlgSettings">
+  <h3>设置</h3>
+  <div class="form">
+    <section class="appearance-settings" aria-labelledby="appearanceHeading">
+      <h4 id="appearanceHeading">外观与启动</h4>
+      <label>界面主题<select id="setTheme"><option value="system">跟随系统</option><option value="dark">深色主题</option><option value="light">浅色主题</option></select></label>
+      <div class="intro-setting-row"><label class="toggle-label"><input type="checkbox" id="setIntro"> 启动时播放「金乌栖扶桑」入场动画</label><button type="button" class="ghost" id="btnReplayIntro">重播动画</button></div>
+      <p class="mini">外观与动画开关即时生效并自动记住；动画中可跳过，按 Esc 也可进入。</p>
+    </section>
+    <details id="reasoningSettings" open>
+      <summary>模型推理档位</summary>
+      <div class="mini" style="margin:4px 0 8px">独立于顶部的工作模式。每个模型共用五档滑杆；滑杆会映射到该模型和接口已验证的稳定档位。思考预算与原生强度分别标注。主对话、子代理、追问、识图和压缩均使用对应模型设置。更改后点击弹窗底部「保存」才会生效；取消会丢弃本次设置。若同时修改了接口格式，请先保存，重新打开设置后再选择更新后的档位。测试按钮会发送真实短请求并计入用量；接口接受不代表中转实际执行。</div>
+      <label class="reasoning-filter-label">筛选模型<input id="reasoningModelFilter" type="search" placeholder="输入模型名或供应商，如 Claude、Astra"></label>
+      <div id="modelReasoningRows" class="form"></div>
+      <label>不支持所选档位时<select id="setReasoningFallback"><option value="error">报错且不回退（默认）</option><option value="provider_default">改用提供商默认档位</option></select></label>
+    </details>
+    <details open>
+      <summary>模型提供商（Base URL / 接口格式 / 模型名 / Key）</summary>
+      <div class="mini" style="margin:4px 0 8px">接口格式分别选择 Anthropic Messages、Chat Completions 或 Responses；三者的请求结构不同，不能只改地址后缀。Base URL 可填中转基础地址（如 https://example.com/v1）；系统会避免重复拼接路径。当前 OpenAI 官方 GPT5/6 沿用自动 Responses 适配。模型可添加、编辑、测试、停用或删除；「查询当前 Key 可见模型」只读目录，不产生模型生成用量。网站总目录存在型号，不代表当前密钥所属账户组可调用。<br>
+        内置 7 家不够用就点下面的「＋ 添加供应商」——可以无限加（自建网关、公司内网端点、新的中转站都行）。自定义供应商要填一个<b>标识 id</b>（小写字母数字_-，模型路由靠它），Key 存到 <code>config/custom_&lt;id&gt;.key</code>。</div>
+      <div id="provTable"></div>
+    </details>
+    <div class="grid2">
+      <label>默认模型<input id="setDefaultModel"></label>
+      <label>重装模型<input id="setHeavyModel"></label>
+      <label>识图桥模型<input id="setVisionModel"></label>
+      <label>压缩用模型<input id="setSummarizeModel"></label>
+    </div>
+    <datalist id="modelChoices"></datalist>
+    <details open>
+      <summary>角色模型（建模 / 编程 / 论文 / 审查）</summary>
+      <div class="mini" style="margin:4px 0 8px">留空 = 跟随当前会话或默认模型。数学建模主会话默认使用建模手；动态子代理按任务自动选择。可填模型名或 <code>provider:model</code>，手动在顶部选择的会话模型始终优先。</div>
+      <div class="grid2">
+        <label>建模手模型<input id="setRoleModeler" list="modelChoices" placeholder="如 deepseek-v4-pro"></label>
+        <label>编程手模型<input id="setRoleCoder" list="modelChoices" placeholder="如 glm:glm-5.3"></label>
+        <label>论文手模型<input id="setRoleWriter" list="modelChoices" placeholder="留空跟随会话"></label>
+        <label>审查手模型<input id="setRoleReviewer" list="modelChoices" placeholder="留空使用重装模型"></label>
+      </div>
+    </details>
+    <details open>
+      <summary>判断层（Jev / 有限选项复核）</summary>
+      <div class="mini" style="margin:4px 0 8px">只复核 3 个候选方案，不参与建模和论文生成。默认策略是“与主模型一致且置信度达到门槛才记为通过”；分歧或低置信度只升级，不自动改选。密钥仍由上面的供应商配置管理。</div>
+      <div class="grid2">
+        <label class="toggle-label"><input type="checkbox" id="setJudgeEnabled"> 启用判断层</label>
+        <label>判断模型<input id="setJudgeModel" list="modelChoices" placeholder="如 tokenrhythm:neohorse-1-9b"></label>
+        <label>使用时机<select id="setJudgeTrigger"><option value="on_demand">按需：只在模型显式调用时使用</option><option value="smart">智能触发：低风险筛选时自动复核</option><option value="always">每张 3+1 卡：实验/高成本模式</option></select></label>
+        <label>最低置信度<input id="setJudgeThreshold" type="number" step="0.01" min="0" max="1"></label>
+      </div>
+      <div id="judgeConfigStatus" class="mini" aria-live="polite"></div>
+    </details>
+    <div class="grid2">
+      <label>temperature<input id="setTemp" type="number" step="0.1" min="0" max="2"></label>
+      <label>DeepSeek 旧推理开关<select id="setEffort"><option value="on">开启（沿用原行为）</option><option value="off">关闭</option></select></label>
+    </div>
+    <div class="grid2">
+      <label>单次输出上限 tokens<input id="setMaxOut" type="number" step="1024" title="0=不限制（失控保险丝，防复读机烧钱）"></label>
+      <label>上下文阈值 tokens<input id="setCtxLimit" type="number" step="8192" title="超过即触发历史压缩；0=用默认131072"></label>
+    </div>
+    <details>
+      <summary>归档会话（恢复 / 彻底删除）</summary>
+      <div id="archivedList" class="mini">（没有归档的会话）</div>
+      <div class="mini" style="margin-top:4px">
+        会话记录存在 <code>data/sessions/</code>；<b>彻底删除不影响经验库</b>——经验在 <code>data/memory/store.jsonl</code>，跟聊天记录是两个文件。
+      </div>
+    </details>
+    <div class="mini" id="buildStamp" style="margin-top:10px"></div>
+    <div class="btnrow settings-actions"><button class="primary" id="btnSaveSettings">保存</button><button id="btnCloseSettings">取消</button></div>
+  </div>
+</dialog>
+
+<!-- 后台任务监控 -->
+<dialog id="dlgJobs" aria-labelledby="jobsTitle">
+  <h3 id="jobsTitle">后台任务</h3>
+  <div id="jobSummary" class="mini" aria-live="polite">（暂无任务）</div>
+  <section id="jobResumptions" class="job-resumptions" aria-label="待人工核对的主流程"></section>
+  <section id="jobNotifications" class="job-notifications" aria-label="任务通知"></section>
+  <button class="ghost tiny" id="btnAckJobNotifications" type="button" hidden>全部标为已读</button>
+  <div id="jobList" class="job-list"></div>
+  <div class="btnrow"><button id="btnCloseJobs">关闭</button></div>
+</dialog>
+
+<!-- 技能库抽屉 -->
+<dialog id="dlgProjectPlan" aria-labelledby="projectPlanTitle">
+  <h3 id="projectPlanTitle">项目建模方案</h3>
+  <p class="mini">选择研究、图表与审查方法，保存后用于新会话。赛事规则和计算验收由赛事包继续执行。</p>
+  <div id="planProjectName" class="mini"></div>
+  <div id="planStatus" class="mini" role="status" aria-live="polite"></div>
+  <label>模板库<select id="planTemplate"><option value="">选择建模模板…</option></select></label>
+  <p id="planTemplateDescription" class="mini">赛事模板选择对应流程和论文骨架；仿真方法模板保留当前赛事规则。</p>
+  <div class="btnrow"><button id="btnPlanTemplate" type="button">载入模板草稿</button></div>
+  <div class="plan-controls">
+    <label>方案名称<input id="planLabel" maxlength="100" placeholder="如：优化题研究方案"></label>
+    <label>赛事包<select id="planContestKind"></select></label>
+      <label>美赛控制号<input id="planControlNumber" inputmode="numeric" maxlength="12" placeholder="取得后填写，随方案迁移"></label>
+    <label>赛事主技能<select id="planMainSkill"></select></label>
+    <p class="mini">任务条件由你填写，标签须与 Skill 的适用声明一致。留空表示未知，受该条件约束的 Skill 会显示待确认。多个标签用逗号分隔，明确“无”可在完整 JSON 中填写空数组。</p>
+    <label>题型标签<input id="planProblemTypes" placeholder="如：pde, time-series, optimization"></label>
+    <label>当前阶段<input id="planStages" placeholder="如：modeling, solving, validation"></label>
+    <label>数据条件<input id="planData" placeholder="如：time-series, observations"></label>
+    <label class="plan-trace-option"><input id="planTraceRequired" type="checkbox">交付要求主张与图表追溯</label>
+    <label class="plan-trace-option"><input id="planEvidenceFigures" type="checkbox">启用证据图渲染插件</label>
+    <div id="planOtherPlugins"></div>
+    <p id="planPluginHint" class="mini">插件用于新会话：隔离副本绘图、禁网与子进程，仅接收声明图件；生效版本见预览。</p>
+    <p class="mini">赛事主技能留空时按赛事与模型自动选择。研究、图表、审查可各自关闭、补充或替换默认方法。</p>
+    <div id="planSlotControls"></div>
+  </div>
+  <details id="planAdvanced"><summary>编辑完整方案 JSON（含回退链与赛事细则）</summary>
+    <textarea id="planJson" spellcheck="false" aria-label="项目方案 JSON"></textarea>
+    <button id="btnPlanApplyJson" class="ghost" type="button">按 JSON 更新上方选项</button>
+  </details>
+  <details><summary>本机附加 Skill 搜索目录</summary>
+    <p class="mini">本机全局设置，每行一个绝对路径，例如已有的共享技能目录。目录不会随项目方案导出，也不会改写已冻结会话。</p>
+    <textarea id="planLocalRoots" rows="3" spellcheck="false" aria-label="本机附加技能目录"></textarea>
+    <button id="btnPlanRoots" type="button">保存本机搜索目录</button>
+  </details>
+  <h4>新会话预览</h4>
+  <div class="btnrow"><button id="btnPlanAssess" type="button">检查当前草稿适配性</button></div>
+  <div id="planEffective" class="plan-effective"></div>
+  <h4>当前会话快照</h4>
+  <div id="planCurrentSession" class="plan-effective mini"></div>
+  <input id="planImportFile" type="file" accept=".json,application/json" hidden>
+  <div class="btnrow plan-actions">
+    <button id="btnPlanImport" type="button">导入 JSON</button>
+    <button id="btnPlanExport" type="button">导出 JSON</button>
+    <button id="btnPlanSave" class="primary" type="button">保存项目方案</button>
+    <button id="btnPlanClose" type="button">关闭</button>
+  </div>
+</dialog>
+
+<!-- 技能库抽屉 -->
+<dialog id="dlgSkills">
+  <div class="mini" style="margin:4px 0 8px">
+    本次会话使用的技能：
+    <select id="skillOverride" style="display:inline-block;width:auto;min-width:220px"></select>
+    <span class="mini">（默认「自动」= 按赛事档案和模型选择；选具体技能则强制用它，下次打开本会话仍生效）</span>
+  </div>
+  <h3>赛事建模技能</h3>
+  <div id="myCumcmBody"></div>
+  <h3>本地技能库（只读）</h3>
+  <input id="skillFilter" placeholder="搜索技能…">
+  <div id="skillListBody"></div>
+  <div id="skillActions" class="btnrow" style="display:none;justify-content:flex-start;gap:8px;flex-wrap:wrap"></div>
+  <pre id="skillPreview" style="display:none"></pre>
+  <div class="btnrow"><button id="btnCloseSkills">关闭</button></div>
+</dialog>
+
+<dialog id="dlgIntro" aria-labelledby="introTitle" aria-describedby="introCaption">
+  <div class="intro-aura" aria-hidden="true"></div>
+  <div class="intro-scene" aria-label="金乌振翅越九霄"><img src="/static/jinwu.svg" alt="三足金乌昂首栖于扶桑树上" width="320" height="320"></div>
+  <div class="intro-copy"><p class="intro-eyebrow">XIHE AGENT</p><h1 id="introTitle">羲和</h1><p id="introCaption">振翅越九霄 · 扶桑见天地</p></div>
+  <div class="intro-actions"><button class="ghost" id="btnSkipIntro">跳过 · 进入界面</button><label class="toggle-label"><input type="checkbox" id="introDisable"> 以后不再播放</label></div>
+</dialog>
+<script src="/static/app.js"></script>
+<script src="/static/usage.js"></script>
+</body>
+</html>

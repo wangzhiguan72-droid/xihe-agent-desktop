@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "id": "cumcm",
+  "label": "全国大学生数学建模竞赛（国赛）",
+  "identity": {
+    "competition": "CUMCM",
+    "edition": "to-verify",
+    "stage": "to-verify"
+  },
+  "match": {
+    "any": [
+      "CUMCM",
+      "国赛",
+      "全国大学生数学建模"
+    ],
+    "all": []
+  },
+  "skills": {
+    "default": "my-cumcm-fullflow",
+    "providers": {
+      "deepseek": "my-cumcm-deepseek",
+      "glm": "my-cumcm-zcode"
+    }
+  },
+  "rules": "rules.json",
+  "workflow": "workflow.json",
+  "template": "paper"
+}

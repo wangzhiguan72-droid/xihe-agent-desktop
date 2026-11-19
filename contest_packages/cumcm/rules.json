@@ -1,0 +1,91 @@
+{
+  "sources": [
+    {
+      "id": "user-local-2026-10-19",
+      "type": "user",
+      "description": "用户本机国赛论文质量契约，2026-10-19；仅用户约定，非全国统一官方条款"
+    }
+  ],
+  "require_confirmation": false,
+  "required_fields": [
+    "source",
+    "profile"
+  ],
+  "paper_quality_profile": "cumcm-user",
+  "defaults": {
+    "support_policy": {
+      "max_bytes": 20000000,
+      "exclusive": true,
+      "source": "用户本机质量契约2026-10-19"
+    }
+  },
+  "paper": {
+    "abstract_first_page": true,
+    "toc_required": false,
+    "support_manifest_required": true,
+    "appendix_heading_titles": [
+      "附录"
+    ],
+    "ai_details": {
+      "title": "AI 工具使用详情",
+      "filename": "AI 工具使用详情.pdf",
+      "draft_only": true,
+      "required": true
+    },
+    "body_pages": {
+      "min": 20,
+      "max": 30,
+      "preferred": [
+        23,
+        28
+      ]
+    },
+    "appendix_pages_max": 20,
+    "total_pdf_pages_max": 50,
+    "references": {
+      "count_min": 6,
+      "count_max": 10,
+      "style": "GB/T 7714-2015",
+      "textbooks": [
+        "姜启源《数学模型》",
+        "司守奎《数学建模算法与应用》"
+      ]
+    }
+  },
+  "quality": {
+    "body_min": 20,
+    "body_max": 30,
+    "body_preferred_min": 23,
+    "body_preferred_max": 28,
+    "appendix_max": 20,
+    "total_max": 50,
+    "keywords_min": 3,
+    "keywords_max": 5,
+    "references_min": 6,
+    "references_max": 10,
+    "required_books": [
+      { "author": "姜启源", "title": "数学模型" },
+      { "author": "司守奎", "title": "数学建模算法与应用" }
+    ],
+    "appendix_required": true,
+    "appendix_excerpt_required": true,
+    "support_manifest_required": true
+  },
+  "profiles": {
+    "cumcm-2026-user": {
+      "edition": "2026",
+      "stage": "user-local",
+      "constraints": {
+        "body_pages_min": 20,
+        "body_pages_max": 30,
+        "appendix_pages_max": 20,
+        "total_pdf_pages_max": 50,
+        "support_max_bytes_exclusive": 20000000
+      },
+      "required_fields": [
+        "source",
+        "profile"
+      ]
+    }
+  }
+}

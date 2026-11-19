@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-34 -24 388 388" role="img" aria-labelledby="title description">
+  <title id="title">羲和金乌</title><desc id="description">黑金三足神乌展翼立于扶桑枝，俯瞰云海</desc>
+  <defs>
+    <linearGradient id="plume" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff3b3"/><stop offset=".28" stop-color="#e3ac42"/><stop offset=".57" stop-color="#77522d"/><stop offset="1" stop-color="#171923"/></linearGradient>
+    <linearGradient id="dark" x1="0" y1="0" x2=".9" y2="1"><stop stop-color="#6b4a2c"/><stop offset=".38" stop-color="#2a2530"/><stop offset="1" stop-color="#0d1420"/></linearGradient>
+    <radialGradient id="halo"><stop stop-color="#fff1a7" stop-opacity=".3"/><stop offset=".65" stop-color="#eea439" stop-opacity=".12"/><stop offset="1" stop-color="#eea439" stop-opacity="0"/></radialGradient>
+  </defs>
+  <circle cx="159" cy="154" r="141" fill="url(#halo)"/><circle cx="159" cy="154" r="113" fill="none" stroke="#deaa59" stroke-opacity=".55" stroke-width="2"/>
+  <path d="M9 263c54-6 80 7 116 0 35-7 61-24 102-18 32 4 54 4 84-4" fill="none" stroke="#bb8139" stroke-width="13" stroke-linecap="round"/>
+  <path d="M51 259c47-4 73 5 115-7 43-12 71-3 117-5m-78-3c21-24 25-48 34-68m-53 72c-21-20-29-42-34-66" fill="none" stroke="#ffe3a0" stroke-opacity=".62" stroke-width="2" stroke-linecap="round"/>
+  <path d="M228 201c8-21 23-31 43-36-6 18-18 29-40 39m-80 0c-8-20-25-31-43-34 9 19 23 32 43 39" fill="#a76c32" stroke="#e8b35b" stroke-width="2"/>
+  <path d="M115 185c-28 16-44 31-78 35 14 8 31 10 49 8-15 15-35 25-64 34 39 8 77-4 109-28-9 15-20 27-34 37 34-4 65-22 85-51Z" fill="url(#dark)" stroke="#cf9447" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M43 221c42 3 66-9 96-24M28 258c51-5 77-20 108-42m-34 48c18-14 37-29 54-55" fill="none" stroke="#dca75c" stroke-width="2" stroke-opacity=".75"/>
+  <path d="M146 170C104 148 62 106 26 39c13 46 28 78 45 98C46 126 25 108 8 85c14 50 39 83 79 104-27-5-51-18-71-31 31 43 75 65 132 57Z" fill="url(#dark)" stroke="#cc9652" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M30 52c43 83 83 122 127 139M14 101c42 63 81 86 139 104M32 171c40 30 79 43 119 41" fill="none" stroke="#e4b366" stroke-width="3" stroke-opacity=".8" stroke-linecap="round"/>
+  <path d="M42 74c24 34 46 61 74 80M31 120c27 30 49 47 81 60M48 180c22 13 45 22 65 24" fill="none" stroke="#fff0bf" stroke-width="1.5" stroke-opacity=".7"/>
+  <path d="M121 174c19-16 39-22 54-42 14-18 14-47 39-58 17-8 32-5 43 7 7 8 8 18 6 26-4 17-20 29-38 32-5 37-26 69-57 80-24 6-46-10-57-28Z" fill="url(#plume)" stroke="#cf9244" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M248 99c20 2 43 8 65 17l-18 8c1 7-6 12-16 14 4-6 5-11 0-13l-36-3Z" fill="#34252a" stroke="#d09241" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M217 100c12-11 25-10 37-2l-15 1-14 9Z" fill="#161923" stroke="#d29b4f" stroke-width="1.7"/>
+  <path d="M222 107c8-5 15-4 20 0-4 5-12 7-20 4Z" fill="#edbd68"/><circle cx="232" cy="108" r="2.8" fill="#1a1720"/><circle cx="232.8" cy="107.1" r=".8" fill="#fff8d5"/>
+  <path d="M127 177c12 27 34 36 57 28M182 143c17-7 30-20 36-35" fill="none" stroke="#fff0b5" stroke-width="3" stroke-opacity=".72" stroke-linecap="round"/>
+  <path d="M164 167C155 122 150 76 153 19c-17 39-21 72-18 103-14-27-23-53-25-80-12 42-7 78 9 107-20-18-37-38-49-58 5 42 33 86 78 110 18 1 37-10 45-25Z" fill="url(#plume)" stroke="#e0a853" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M154 31c-5 56 3 100 27 144M116 63c2 56 24 95 61 124M82 109c20 47 52 70 91 85" fill="none" stroke="#ffdc88" stroke-width="3" stroke-linecap="round"/>
+  <path d="M151 53c-5 31-2 59 9 84m-40-50c6 29 17 53 33 72m-51-29c15 22 30 38 48 47" fill="none" stroke="#fff4c7" stroke-opacity=".64" stroke-width="1.5"/>
+  <g fill="none" stroke="#bd823b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M139 212c-7 16-8 29-9 44l-12 7m12-7 4 9m-4-9 13 3"/><path d="M165 218c0 15-1 27-4 40l-12 6m12-6 5 8m-5-8 13 2"/><path d="M187 209c11 15 14 29 16 45l-9 9m9-9 7 9m-7-9 13-2"/></g>
+  <path d="M28 276c61-12 115-4 162-20 50-16 82-8 116-10" fill="none" stroke="#fad17f" stroke-opacity=".55" stroke-width="2"/>
+</svg>

@@ -1,0 +1,4 @@
+interface:
+  display_name: "研究判断与实验设计"
+  short_description: "按机理反演、预测、优化和评价任务选择可检验的下一步研究行动"
+  default_prompt: "使用 $xihe-research-methods，按题目目标和当前证据确定基线、最小实验、判据与结论边界。"

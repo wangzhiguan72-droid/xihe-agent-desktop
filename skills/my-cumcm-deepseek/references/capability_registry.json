@@ -1,0 +1,256 @@
+{
+  "schema_version": 1,
+  "scope": "Candidate local entries, not host tool availability or automatic-invocation authorization.",
+  "skills": [
+    {
+      "id": "bzd-problem-translator",
+      "candidates": [
+        "bzd-problem-translator"
+      ]
+    },
+    {
+      "id": "bzd-modeling-ideas",
+      "candidates": [
+        "bzd-modeling-ideas"
+      ]
+    },
+    {
+      "id": "bzd-model-dictionary",
+      "candidates": [
+        "bzd-model-dictionary"
+      ]
+    },
+    {
+      "id": "math-modeling-contest-route-selection",
+      "candidates": [
+        "math-modeling-contest-route-selection"
+      ]
+    },
+    {
+      "id": "bzd-problem-analysis-checker",
+      "candidates": [
+        "bzd-problem-analysis-checker"
+      ]
+    },
+    {
+      "id": "bzd-model-assumption-checker",
+      "candidates": [
+        "bzd-model-assumption-checker"
+      ]
+    },
+    {
+      "id": "bzd-model-solution-checker",
+      "candidates": [
+        "bzd-model-solution-checker"
+      ]
+    },
+    {
+      "id": "bzd-symbol-notation-checker",
+      "candidates": [
+        "bzd-symbol-notation-checker"
+      ]
+    },
+    {
+      "id": "bzd-abstract-checker",
+      "candidates": [
+        "bzd-abstract-checker"
+      ]
+    },
+    {
+      "id": "bzd-paper-format-checker",
+      "candidates": [
+        "bzd-paper-format-checker"
+      ]
+    },
+    {
+      "id": "bzd-reference-appendix-checker",
+      "candidates": [
+        "bzd-reference-appendix-checker"
+      ]
+    },
+    {
+      "id": "bzd-ai-usage-disclosure",
+      "candidates": [
+        "bzd-ai-usage-disclosure"
+      ]
+    },
+    {
+      "id": "bzd-review-paper",
+      "candidates": [
+        "bzd-review-paper"
+      ]
+    },
+    {
+      "id": "math-modeling-code-experiment",
+      "candidates": [
+        "math-modeling-code-experiment"
+      ]
+    },
+    {
+      "id": "math-modeling-methodology-writer",
+      "candidates": [
+        "math-modeling-methodology-writer"
+      ]
+    },
+    {
+      "id": "math-modeling-solution-writer",
+      "candidates": [
+        "math-modeling-solution-writer"
+      ]
+    },
+    {
+      "id": "scipilot-figure-skill",
+      "candidates": [
+        "scipilot-figure-skill"
+      ]
+    },
+    {
+      "id": "nature-figure",
+      "candidates": [
+        "nature-figure"
+      ]
+    },
+    {
+      "id": "mathodology-figure-presets",
+      "candidates": [
+        "mathodology-figure-presets"
+      ]
+    },
+    {
+      "id": "py-nature",
+      "candidates": [
+        "py-nature"
+      ]
+    },
+    {
+      "id": "ai-draw-skills",
+      "candidates": [
+        "ai-draw-skills"
+      ]
+    },
+    {
+      "id": "html-paper-figure",
+      "candidates": [
+        "html-paper-figure"
+      ]
+    },
+    {
+      "id": "problem-doc-model-selector",
+      "candidates": [
+        "problem-doc-model-selector",
+        "yushui-mathmodel-skill/packages/codex/skills/problem-doc-model-selector"
+      ]
+    },
+    {
+      "id": "math-modeling-solver",
+      "candidates": [
+        "math-modeling-solver",
+        "lupynow-math-modeling-skills/skills/math-modeling-solver"
+      ]
+    },
+    {
+      "id": "humanizer-zh",
+      "names": [
+        "humanizer-zh",
+        "【去AI】humanizer-zh"
+      ],
+      "candidates": [
+        "humanizer-zh",
+        "【去AI】humanizer-zh"
+      ]
+    },
+    {
+      "id": "drawio",
+      "names": [
+        "drawio-skill",
+        "drawio"
+      ],
+      "candidates": [
+        "drawio-skill",
+        "cumcm-step-review/tools/drawio"
+      ]
+    },
+    {
+      "id": "scibox-diagram",
+      "candidates": [
+        "scibox-diagram",
+        "cumcm-step-review/tools/drawio/scibox-diagram"
+      ]
+    },
+    {
+      "id": "latex",
+      "names": [
+        "LaTeX工具",
+        "latex"
+      ],
+      "candidates": [
+        "latex",
+        "cumcm-step-review/tools/latex",
+        "math-modeling/tools/latex"
+      ]
+    },
+    {
+      "id": "pdf",
+      "candidates": [
+        "pdf",
+        "cumcm-step-review/tools/pdf",
+        "math-modeling/tools/pdf",
+        "document-SKILLs/pdf"
+      ]
+    },
+    {
+      "id": "docx",
+      "names": [
+        "docx",
+        "DOCX工具"
+      ],
+      "candidates": [
+        "docx",
+        "cumcm-step-review/tools/docx",
+        "math-modeling/tools/docx",
+        "document-SKILLs/docx"
+      ]
+    },
+    {
+      "id": "mathmodel-resources",
+      "candidates": [
+        "mathmodel-resources"
+      ]
+    },
+    {
+      "id": "nature-academic-search",
+      "candidates": [
+        "nature-academic-search"
+      ]
+    }
+  ],
+  "libraries": [
+    {
+      "id": "mathskills-algorithms",
+      "candidate": "mathskills/references/algorithm-library",
+      "files": [
+        "README.md",
+        "01-优化算法说明.md",
+        "02-预测类算法说明.md",
+        "03-评价类算法说明.md",
+        "04-图论与网络分析算法说明.md",
+        "05-统计分析与数据处理算法说明.md",
+        "06-综合类算法说明.md",
+        "07-机器学习算法说明.md"
+      ]
+    },
+    {
+      "id": "math-modeling-algorithms",
+      "candidate": "math-modeling/assets",
+      "files": [
+        "01-优化算法说明.md",
+        "02-预测类算法说明.md",
+        "03-评价类算法说明.md",
+        "04-图论与网络分析算法说明.md",
+        "05-统计分析与数据处理算法说明.md",
+        "06-综合类算法说明.md",
+        "07-机器学习算法说明.md"
+      ]
+    }
+  ]
+}
