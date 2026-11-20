@@ -12,7 +12,7 @@ const modelSpec = require('./model_spec');
 const candidateComparison = require('./candidate_comparison');
 const iterationEvidence = require('./iteration_evidence');
 const { wrapMaterial } = require('./material_policy');
-const { judgeDecision, disposition: decisionJudgeDisposition } = require('./decision_judge');
+const { judgeDecision, disposition: decisionJudgeDisposition, settingsOf: decisionJudgeSettings } = require('./decision_judge');
 const APP_PATHS = require('./paths');
 
 const RESULT_CAP = 60000;
@@ -4836,18 +4836,21 @@ function deepVisible(mode) {
   return false; // 传的是 mode 字符串（code/math/free）→ 这是领域维度，不是深度 → 不下发
 }
 
-function toolList(mode) {
+function toolList(mode, settings) {
+  // Jev 是可选附加层：显式传入 settings 且判断层未启用时，不向模型广告 decision_judge。
+  const hideJudge = settings && !decisionJudgeSettings(settings).enabled;
+  const keep = t => !(hideJudge && t.name === 'decision_judge');
   if (mode && typeof mode === 'object') {
     const modes = require('./modes');
     const hidden = new Set(modes.HIDDEN_BY_TIER[modes.tierOf(mode)] || []);
-    return TOOLS.filter(t => !hidden.has(t.name));
+    return TOOLS.filter(t => !hidden.has(t.name) && keep(t));
   }
   // 旧式 domain mode 字符串没有 effort，按 fast 的四个重手法隐藏，但保留旧版单 reviewer 能力。
-  return TOOLS.filter(t => !DEEP_ONLY.has(t.name));
+  return TOOLS.filter(t => !DEEP_ONLY.has(t.name) && keep(t));
 }
 
-function toOpenAITools(mode) {
-  return toolList(mode).map(t => ({
+function toOpenAITools(mode, settings) {
+  return toolList(mode, settings).map(t => ({
     type: 'function',
     function: {
       name: t.name,
@@ -4868,8 +4871,8 @@ function toOpenAITools(mode) {
 }
 
 // Anthropic 原生协议的工具格式（Claude 系）
-function toAnthropicTools(mode) {
-  return toolList(mode).map(t => ({
+function toAnthropicTools(mode, settings) {
+  return toolList(mode, settings).map(t => ({
     name: t.name,
     description: t.desc,
     input_schema: {

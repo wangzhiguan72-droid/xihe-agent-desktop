@@ -796,6 +796,7 @@ function recordRun(session, { tool, ok, ms, modelTag, out, sig, formal, unstable
 // ---------- 系统提示（会话创建时冻结 → 前缀缓存根基） ----------
 function baseSystem(root, settings, mainModel) {
   const configuredMain = String(mainModel || settings?.role_models?.modeler || settings?.default_model || '当前配置模型');
+  const judgeOn = settings?.decision_judge?.enabled === true;
   return `你是「羲和 Agent」，运行在用户本机的桌面智能体，当前主脑模型为 ${configuredMain}。唯一可写工作区（沙箱根目录）：${root}
 当前时间：${new Date().toLocaleString('zh-CN', { hour12: false })}（会话内固定，勿再询问）
 
@@ -828,8 +829,7 @@ function baseSystem(root, settings, mainModel) {
 - 换方法的判据是「原因未变、同法连败」。**失败原因被修复后（用户实时修好工具/环境/配置、参数已更正、数据已补齐）沿原路线重试是正确行为，不算重复打转**——不要因为之前失败过就放弃一条已被修好的路线去另起炉灶。
 - 需要用户拍板的事项用 ask_user（界面弹卡片，本批后续工具不再执行，等用户回答）。不要臆测用户偏好；一次问一个核心问题。
 - 路线卡的三个候选须有实质区别；可写明某项需补数据才适用、当前不适用或暂缓，不能把不具备条件的路线假装成可行方案。recommendation_reason 要解释为什么推荐项比另外两项更适合题目目标、现有数据和剩余赛时；没有运行证据时写“待验证”，不要编造比较实验。示例：“题目只需解释已观测关系，现有样本可支持基线回归；复杂预测模型需额外时序样本，机理模型缺参数，因此先采用可检验基线。”用户可先追问，追问不代表采纳。
-- 有三个已经成形的有限候选、需要快速做路由或重复性筛选时，可调用 decision_judge 做独立初筛；它只给选择、置信度和升级信号。Jev 与主模型推荐不一致、置信度低于设置门槛、接口不可用或任务涉及开放式创新/核心假设/最终论文时，必须保留主模型或人的裁决并升级，不能把它当作证明或一票否决。
-- 长计算通过 job_start 入队；只在任务幂等且能安全重跑时设 retryable:true/max_attempts。无需继续独立工作时用 job_wait({ids:[job_id]}) 暂停本轮，任务结束后由系统恢复同一主会话，不循环调用 job_status 空等。后台成功仅是进程完成，结果仍需正式证据门禁；子代理仅返回 job_id 给主会话。
+${judgeOn ? '- 有三个已经成形的有限候选、需要快速做路由或重复性筛选时，可调用 decision_judge 做独立初筛；它只给选择、置信度和升级信号。Jev 与主模型推荐不一致、置信度低于设置门槛、接口不可用或任务涉及开放式创新/核心假设/最终论文时，必须保留主模型或人的裁决并升级，不能把它当作证明或一票否决。\n' : ''}- 长计算通过 job_start 入队；只在任务幂等且能安全重跑时设 retryable:true/max_attempts。无需继续独立工作时用 job_wait({ids:[job_id]}) 暂停本轮，任务结束后由系统恢复同一主会话，不循环调用 job_status 空等。后台成功仅是进程完成，结果仍需正式证据门禁；子代理仅返回 job_id 给主会话。
 
 ## 成本纪律（DeepSeek 按前缀缓存计价，未命中最高可达命中价的数倍）
 - 系统提示与会话历史不可变；你的每次回复都会成为缓存前缀的一部分。
@@ -1352,7 +1352,7 @@ async function runTurn(session, deps, userInput) {
   const apiKey = keyFor(providerKey, appDir);
   if (!apiKey) { failTurn(session, deps, emitSafe, '未配置 API Key', `提供商 ${provider.name} 缺少 key（设置页填入或放置 ${provider.keyFile}）。`); return; }
   const isAnthropic = provider.kind === 'anthropic';
-  const tools = (isAnthropic ? toAnthropicTools(session) : toOpenAITools(session))
+  const tools = (isAnthropic ? toAnthropicTools(session, settings) : toOpenAITools(session, settings))
     .filter(t => !isLocalTask(session) || !LOCAL_BLOCKED_TOOLS.has(isAnthropic ? t.name : t.function.name));
   const spend = makeSpend(session, deps);
   const ctx = {
@@ -2438,7 +2438,7 @@ async function runSubagent(ctx, deps, profile, prompt, meta, spend) {
     }
   } catch {}
   const isAnthropic = provider.kind === 'anthropic';
-  const subTools = (isAnthropic ? toAnthropicTools(ctx.session) : toOpenAITools(ctx.session)).filter(t => {
+  const subTools = (isAnthropic ? toAnthropicTools(ctx.session, ctx.settings) : toOpenAITools(ctx.session, ctx.settings)).filter(t => {
     const name = isAnthropic ? t.name : t.function.name;
     return toolNames.has(name);
   });

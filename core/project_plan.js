@@ -169,7 +169,7 @@ function loadSessionSkill(appDir, session, name, file, settings = {}, usage = {}
     if (!['main', ...SLOTS].includes(slot) || !['append', 'replace'].includes(mode)) throw new Error('动态Skill槽位或模式无效');
     const checked = assessment.assess(result.contract, { slot, mode, context: frozen?.plan.task_context || session?.task_context,
       contest_kind: frozen?.plan.contest.contest_kind || workflow.contestKind(session || {}),
-      tools: require('./tools').toOpenAITools(session).map(row => row.function.name), plugins: (frozen?.plugins || []).filter(row => row.status === 'loaded').map(row => row.id) });
+      tools: require('./tools').toOpenAITools(session, settings).map(row => row.function.name), plugins: (frozen?.plugins || []).filter(row => row.status === 'loaded').map(row => row.id) });
     if (checked.status === 'incompatible') throw new Error('Skill不适配，已阻止加载：' + checked.reasons.join('；'));
     result.applicability = checked;
     const dynamic = session?.skill_dynamic_entries || [];
