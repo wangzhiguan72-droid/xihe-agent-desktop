@@ -51,6 +51,49 @@ const response = (content, usage = { prompt_tokens: 10, completion_tokens: 8 }) 
   global.fetch = oldFetch;
   assert.equal(toolResult.ok, true);
   assert.equal(toolResult.disposition.status, 'accepted');
+
+  // 交换顺序双评（swap_check）：一致才采信，置信度取小，usage 合并；不一致或复判失败都升级。
+  const swapSettings = { ...settings, decision_judge: { ...settings.decision_judge, swap_check: true } };
+  const swapCalls = [];
+  const swapFetch = impl => async (url, init) => { swapCalls.push(JSON.parse(init.body)); return impl(swapCalls.length); };
+  const okBody = (choice, conf) => response(`{"choice_id":"${choice}","confidence":${conf},"reason":"复核"}`,
+    { prompt_tokens: 10, completion_tokens: 8, prompt_tokens_details: { cached_tokens: 6 } });
+  swapCalls.length = 0;
+  const consistent = await judgeDecision({ args, settings: swapSettings, appDir: root, fetchImpl: swapFetch(n => okBody('b', n === 1 ? 0.9 : 0.85)) });
+  assert.equal(swapCalls.length, 2);
+  assert.equal(consistent.ok, true);
+  assert.equal(consistent.swap_checked, true);
+  assert.equal(consistent.swap_consistent, true);
+  assert.equal(consistent.confidence, 0.85);
+  assert.equal(consistent.usage.prompt_tokens, 20);
+  assert.equal(consistent.usage.completion_tokens, 16);
+  assert.equal(consistent.usage.prompt_tokens_details.cached_tokens, 12);
+  const secondPrompt = swapCalls[1].messages[1].content;
+  assert(secondPrompt.indexOf('c |') >= 0 && secondPrompt.indexOf('c |') < secondPrompt.indexOf('a |'), '第二次调用必须倒序列出候选');
+  assert.equal(disposition(consistent, args, swapSettings).status, 'accepted');
+  swapCalls.length = 0;
+  const inconsistent = await judgeDecision({ args, settings: swapSettings, appDir: root, fetchImpl: swapFetch(n => okBody(n === 1 ? 'b' : 'c', 0.95)) });
+  assert.equal(inconsistent.ok, false);
+  assert.equal(inconsistent.swap_consistent, false);
+  assert.deepEqual(inconsistent.choices, ['b', 'c']);
+  assert.equal(disposition(inconsistent, args, swapSettings).status, 'escalate');
+  assert.equal(disposition(inconsistent, args, swapSettings).reason, '交换顺序双评不一致（疑似位置偏差）');
+  swapCalls.length = 0;
+  const secondFailed = await judgeDecision({ args, settings: swapSettings, appDir: root, fetchImpl: swapFetch(n => n === 1 ? okBody('b', 0.9) : { ok: false, status: 500, async json() { return {}; } }) });
+  assert.equal(swapCalls.length, 2);
+  assert.equal(secondFailed.ok, false);
+  assert.equal(secondFailed.swap_checked, true);
+  assert(/交换顺序复判失败/.test(secondFailed.error));
+  swapCalls.length = 0;
+  const firstFailed = await judgeDecision({ args, settings: swapSettings, appDir: root, fetchImpl: swapFetch(() => ({ ok: false, status: 402, async json() { return {}; } })) });
+  assert.equal(swapCalls.length, 1, '首评失败不得再花第二次调用');
+  assert.equal(firstFailed.ok, false);
+  swapCalls.length = 0;
+  const single = await judgeDecision({ args, settings, appDir: root, fetchImpl: swapFetch(() => okBody('b', 0.9)) });
+  assert.equal(swapCalls.length, 1);
+  assert.equal(single.ok, true);
+  assert.equal(single.swap_checked, undefined);
+
   fs.rmSync(root, { recursive: true, force: true });
   console.log('decision judge tests passed');
 })().catch(error => { console.error(error); process.exitCode = 1; });

@@ -1670,6 +1670,7 @@ async function openSettings(focusReasoning = false, trigger = null) {
     $('#setJudgeModel').value = dj.provider && dj.model && !String(dj.model).includes(':') ? `${dj.provider}:${dj.model}` : (dj.model || '');
     $('#setJudgeTrigger').value = ['on_demand', 'smart', 'always'].includes(dj.trigger) ? dj.trigger : 'on_demand';
     $('#setJudgeThreshold').value = dj.min_confidence != null ? dj.min_confidence : 0.82;
+    $('#setJudgeSwap').checked = dj.swap_check === true;
     const judgeKeyReady = !!(b.keys && b.keys[dj.provider || 'tokenrhythm']);
     $('#judgeConfigStatus').textContent = dj.enabled
       ? (judgeKeyReady ? '判断层已启用；分歧和低置信度会升级给主模型或人。' : '判断层已启用，但当前供应商尚未配置 Key；运行时会安全回退。')
@@ -1731,6 +1732,7 @@ $('#btnSaveSettings').onclick = async () => {
         max_tokens: (s.decision_judge && s.decision_judge.max_tokens) || 512,
         auto_override: false,
         allow_override: false,
+        swap_check: $('#setJudgeSwap').checked,
       };
     })(),
     temperature: +$('#setTemp').value, reasoning_effort: $('#setEffort').value,

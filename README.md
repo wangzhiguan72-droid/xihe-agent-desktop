@@ -10,6 +10,7 @@
 - **知识库**：内置精选方法卡 + 可选外部语料索引；按 provenance 区分范文、建议、资料、旧作与自动生成稿。
 - **论文检索**：随包 `academic-search` MCP（Crossref / arXiv 元数据），可选联网网页搜索。
 - **后台任务**：长计算排队执行，服务重启后可恢复与续接。
+- **可选判断层（Jev）**：只对已成形的 3 候选决策做有限复核，默认关闭；分歧或低置信度只升级、不自动改选，可选交换顺序双评防位置偏差。
 
 ## 快速开始
 
@@ -30,6 +31,7 @@ npm install          # 仅安装 Electron
 npm start            # 浏览器模式：node core/server.js --open-edge
 npm run desktop      # Electron 桌面窗口
 npm test             # 全量测试（较慢，会启动本地服务）
+npm run calibrate:jev  # Jev 校准汇总（零 API 调用，只读本机决策留痕）
 ```
 
 国内网络可使用仓库内的 `.npmrc`（npmmirror 镜像）。
@@ -41,6 +43,7 @@ npm test             # 全量测试（较慢，会启动本地服务）
 - 密钥不写入 `settings.json`，单独存放在 `config/*.key`。
 - `kb_roots` 填自己的资料目录；留空则只使用内置知识。
 - 网页搜索默认使用随包 `vendor/open-webSearch`，首次调用时自动拉起本地守护进程。
+- 判断层（Jev）默认关闭，是否启用、何时触发、置信度门槛、交换顺序双评都在设置页自选；`npm run calibrate:jev` 用本机人工最终选择生成校准报告，帮助判断门槛是否合理，不发起任何 API 调用。
 
 ## 目录结构
 
@@ -54,6 +57,7 @@ app/ 或源码根目录
   contest_packages/  各赛事模板与规则
   templates/     LaTeX / 绘图模板
   data/kb/       随包知识库索引
+  scripts/       构建与校准辅助脚本
   config/        本地设置（不随仓库分发）
 ```
 

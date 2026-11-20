@@ -334,6 +334,7 @@ const DEFAULT_SETTINGS = {
     min_confidence: 0.82,
     auto_override: false,
     allow_override: false,
+    swap_check: false,
   },
   vision_model: 'glm-5.3-flash',
   vision_max_tokens: 8192, // 视觉支路独立输出预算（两条协议分支共用）
@@ -377,8 +378,8 @@ function validateModelSettingsPayload(payload, currentSettings = {}) {
     for (const key of ['provider', 'model']) if (j[key] != null && (typeof j[key] !== 'string' || !j[key].trim())) throw new Error(`decision_judge.${key} 无效`);
     for (const key of ['timeout_ms', 'max_tokens']) if (j[key] != null && (!Number.isFinite(Number(j[key])) || Number(j[key]) < 1)) throw new Error(`decision_judge.${key} 无效`);
     if (j.min_confidence != null && (!Number.isFinite(Number(j.min_confidence)) || Number(j.min_confidence) < 0 || Number(j.min_confidence) > 1)) throw new Error('decision_judge.min_confidence 必须在0到1之间');
-    for (const key of ['auto_override', 'allow_override']) if (j[key] != null && typeof j[key] !== 'boolean') throw new Error(`decision_judge.${key} 必须是布尔值`);
-    b.decision_judge = { ...j, trigger: j.trigger || 'on_demand', timeout_ms: j.timeout_ms == null ? 12000 : Math.min(Number(j.timeout_ms), 60000), max_tokens: j.max_tokens == null ? 512 : Math.min(Number(j.max_tokens), 1024), min_confidence: j.min_confidence == null ? 0.82 : Number(j.min_confidence), auto_override: j.auto_override === true, allow_override: j.allow_override === true };
+    for (const key of ['auto_override', 'allow_override', 'swap_check']) if (j[key] != null && typeof j[key] !== 'boolean') throw new Error(`decision_judge.${key} 必须是布尔值`);
+    b.decision_judge = { ...j, trigger: j.trigger || 'on_demand', timeout_ms: j.timeout_ms == null ? 12000 : Math.min(Number(j.timeout_ms), 60000), max_tokens: j.max_tokens == null ? 512 : Math.min(Number(j.max_tokens), 1024), min_confidence: j.min_confidence == null ? 0.82 : Number(j.min_confidence), auto_override: j.auto_override === true, allow_override: j.allow_override === true, swap_check: j.swap_check === true };
   }
   if (Object.hasOwn(b, 'provider_kinds')) {
     if (!b.provider_kinds || typeof b.provider_kinds !== 'object' || Array.isArray(b.provider_kinds)) throw new Error('provider_kinds 必须是对象');
