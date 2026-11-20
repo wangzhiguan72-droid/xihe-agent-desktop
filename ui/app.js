@@ -1728,7 +1728,7 @@ $('#btnSaveSettings').onclick = async () => {
         trigger: $('#setJudgeTrigger').value,
         min_confidence: Math.min(1, Math.max(0, Number($('#setJudgeThreshold').value) || 0.82)),
         timeout_ms: (s.decision_judge && s.decision_judge.timeout_ms) || 12000,
-        max_tokens: (s.decision_judge && s.decision_judge.max_tokens) || 256,
+        max_tokens: (s.decision_judge && s.decision_judge.max_tokens) || 512,
         auto_override: false,
         allow_override: false,
       };

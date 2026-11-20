@@ -16,7 +16,8 @@ const DEFAULTS = Object.freeze({
   provider: 'tokenrhythm',
   model: 'neohorse-1-9b',
   timeout_ms: 12000,
-  max_tokens: 256,
+  // A 100-char Chinese reason plus JSON structure needs ~274 tokens; 256 truncates mid-JSON.
+  max_tokens: 512,
   // Do not treat the model's raw probability as calibrated by default. The
   // first safe policy is agreement checking at a conservative threshold.
   min_confidence: 0.82,
