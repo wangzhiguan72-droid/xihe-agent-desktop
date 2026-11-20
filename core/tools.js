@@ -4137,10 +4137,11 @@ const PURPOSE_OF_TOOL = {
   dispatch_child: '子会话分发', rollback_artifact: '回滚产物', '': '其他',
 };
 
-// 用 PowerShell Compress-Archive 打 zip（Windows 内置，无第三方依赖）。
+// 用 PowerShell 调 .NET ZipArchive 打 zip（Windows 内置，无第三方依赖）。
 // 先由 Node 把待打包文件按相对路径复制到暂存目录（Node 处理 Unicode 文件名可靠），
-// 再整目录交给 Compress-Archive——不把文件清单经 stdin 传给 PowerShell（控制台代码页会把
-// 中文文件名解成乱码，实测 Compress-Archive 报 PathNotFound）。
+// 再在 PowerShell 内部枚举暂存目录逐文件建条目——不把文件清单经 stdin 传给 PowerShell
+// （控制台代码页会把中文文件名解成乱码）。不用 Compress-Archive：PS 5.1 会写出反斜杠
+// 条目名和尾随反斜杠的目录条目，既不符合 zip 规范也会让条目核验误报。
 function makeZip(files, zipPath, root, stageDir) {
   const integrity = require('./support_integrity');
   const stage = stageDir;
@@ -4163,8 +4164,16 @@ function makeZip(files, zipPath, root, stageDir) {
   }
   if (!expected.length) return Promise.resolve({ ok: false, err: '没有可打包的文件（暂存目录为空）' });
   return new Promise((resolve) => {
-    const ps = `$ErrorActionPreference='Stop'; if(Test-Path $env:XIHE_ZIP_OUT){ Remove-Item $env:XIHE_ZIP_OUT -Force }; ` +
-      `Compress-Archive -Path (Join-Path $env:XIHE_ZIP_STAGE '*') -DestinationPath $env:XIHE_ZIP_OUT -CompressionLevel Optimal -Force`;
+    const ps = `$ErrorActionPreference='Stop'; Add-Type -AssemblyName System.IO.Compression; Add-Type -AssemblyName System.IO.Compression.FileSystem; ` +
+      `if(Test-Path $env:XIHE_ZIP_OUT){ Remove-Item $env:XIHE_ZIP_OUT -Force }; ` +
+      // 用 .NET 枚举而非 Get-ChildItem/Resolve-Path：后者会把 8.3 短路径展开成长路径，
+      // 与枚举出的 FullName 前缀不一致，Substring 截相对路径会错位。
+      `$stage=[System.IO.Path]::GetFullPath($env:XIHE_ZIP_STAGE).TrimEnd('\\'); ` +
+      `$zip=[System.IO.Compression.ZipFile]::Open($env:XIHE_ZIP_OUT,[System.IO.Compression.ZipArchiveMode]::Create); ` +
+      `try { foreach($f in [System.IO.Directory]::GetFiles($stage,'*',[System.IO.SearchOption]::AllDirectories)) { ` +
+      `$rel=$f.Substring($stage.Length+1).Replace('\\','/'); ` +
+      `[System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip,$f,$rel,[System.IO.Compression.CompressionLevel]::Optimal) | Out-Null ` +
+      `} } finally { $zip.Dispose() }`;
     const child = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', ps], {
       windowsHide: true,
       env: { ...process.env, XIHE_ZIP_STAGE: stage, XIHE_ZIP_OUT: zipPath },

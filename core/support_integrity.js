@@ -40,10 +40,10 @@ function relativeEntry(root, file) {
 function inspectZip(zipPath) {
   const script = `$ErrorActionPreference='Stop'; Add-Type -AssemblyName System.IO.Compression.FileSystem; ` +
     `$zip=[System.IO.Compression.ZipFile]::OpenRead($env:XIHE_ZIP_INSPECT); ` +
-    `try { $rows=@(); foreach($entry in $zip.Entries) { if($entry.FullName.EndsWith('/')) { continue }; ` +
+    `try { $rows=@(); foreach($entry in $zip.Entries) { $name=$entry.FullName.Replace('\\','/'); if($name.EndsWith('/')) { continue }; ` +
     `$stream=$entry.Open(); try { $sha=[System.Security.Cryptography.SHA256]::Create(); ` +
     `try { $hash=[BitConverter]::ToString($sha.ComputeHash($stream)).Replace('-','').ToLowerInvariant() } finally { $sha.Dispose() } ` +
-    `} finally { $stream.Dispose() }; $rows+=@{name=$entry.FullName; bytes=$entry.Length; sha256=$hash} }; ` +
+    `} finally { $stream.Dispose() }; $rows+=@{name=$name; bytes=$entry.Length; sha256=$hash} }; ` +
     `$json=ConvertTo-Json -InputObject @($rows) -Compress -Depth 4; ` +
     `[Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($json)) ` +
     `} finally { $zip.Dispose() }`;
