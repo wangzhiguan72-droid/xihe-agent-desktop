@@ -7,6 +7,7 @@
 #   advice / guide / 建议 / 方法 → advice   方法论与经验贴
 #   official / rule / 评阅 / 规定 → reference  官方规则或参考资料
 #   其余                     → exemplar   范文
+# 智能体工具/工作输出子目录（codex/zcode/work/output/review-N…）即使挂在旧作语料下也按 agent_run 降权。
 import sys, os, json, re, time, hashlib, zipfile, argparse, unicodedata
 
 EXTS = {'.pdf', '.docx', '.md', '.txt', '.tex'}
@@ -23,15 +24,20 @@ MIN_CHUNK = 60
 
 def provenance(rel):
     # 只看路径关键词，不依赖特定机器的目录命名。
+    # 英文关键词按词边界匹配，避免 download 含 own、notebook 含 note、network 含 work 之类子串误报。
     s = (rel or '').replace('\\', '/')
     low = s.lower()
     if re.search(r'ai[-_ ]?run|auto[-_ ]?run|agent[-_ ]?run|纯\s*ai|ai\s*跑稿|生成稿', low):
         return 'agent_run'
-    if re.search(r'own|draft|note|旧作|草稿|笔记|自写|自己写', low):
+    segs = [p for p in low.split('/') if p]
+    tool_seg = re.compile(r'^(codex|mrite|zcode|work|output|python-deps|lo-profile|latest-modeling|audit-rerun|review-?\d.*)$')
+    if any(tool_seg.match(p) or re.search(r'智能体|agent|接入|跑的|输出图表', p) for p in segs):
+        return 'agent_run'
+    if re.search(r'(?<![a-z0-9])(own|draft|note|notes)(?![a-z0-9])|旧作|草稿|笔记|自写|自己写', low):
         return 'user_own'
-    if re.search(r'advice|guide|tip|method|建议|方法|经验', low):
+    if re.search(r'(?<![a-z0-9])(advice|guide|tip|tips|method|methods)(?![a-z0-9])|建议|方法|经验', low):
         return 'advice'
-    if re.search(r'official|rule|reference|review|评阅|规则|规定|资料', low):
+    if re.search(r'(?<![a-z0-9])(official|rule|rules|reference|review)(?![a-z0-9])|评阅|规则|规定|资料', low):
         return 'reference'
     return 'exemplar'
 
