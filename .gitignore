@@ -7,6 +7,7 @@
 # 本机数据与工作区
 /data/*
 !/data/kb/
+/core/data/
 /workspace/
 /config/settings.json
 /config/*.key
