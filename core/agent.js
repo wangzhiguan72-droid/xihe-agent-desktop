@@ -942,7 +942,8 @@ function buildSystem(mode, root, settings, appDir, providerKey, skillOverride, s
           `题目契约纪律（引擎强制，读题后第一件事）：用 contract_register 登记关键题设——实体定义（几何对象、尺寸）、越界/边界规则、单位、目标、关键假设，各带原文位置（题目第N页/附件）。可用 kind 与工具 schema 同源：${contractKinds.join('/')}。契约独立于聊天摘要存活（长对话压缩不丢），修订会自动作废旧结果。历史教训：几何/实体对象理解错了（如越界处理方式），后面所有精细计算跟着错——契约是第一道防线。\n` +
           `逐问任务表纪律（引擎强制）：按题目实际问题数，用 question_graph({op:"upsert", id, title, route, status, deps, assumptions, experiments}) 维护数模问题级状态；上游问题修订（路线/假设/备注）可能触发下游问题实验失效传播。状态机：drafting → reviewing → committed；committed 状态须实验数据完整且与依赖项假设一致才能标。\n` +
           `正式求解纪律（引擎强制）：会话登记过公式后，正式计算必须带 formal:true 与 uses_formulas（声明依赖的公式名，拼错会被拒）；探索性计算可省略，但其数值不构成证据。关键几何/物理假设先构造解析反例验证（如端面间距、越界裁剪、守恒与极限情形）——反例不通过时不得进入大规模计算，应回到建模阶段。\n` +
-          `以下为技能正文：\n\n${wrapMaterial(r.content, { kind: 'skill', source: r.file })}${refs}`;
+          `以下为技能正文：\n\n${wrapMaterial(r.content, { kind: 'skill', source: r.file })}${refs}`
+          + require('./skill_quality').qualityWarning(appDir, r.sha256, settings);
         break;
       } catch (e) {
         if (frozen) throw new Error('冻结的主Skill无法读取，保留原版本而未静默替换：' + e.message);
@@ -2669,4 +2670,4 @@ function saveSession(deps, session) {
   }
 }
 
-module.exports = { MATH_SKILLS, autoPick, modeBlock, autoFinished, nextStepHint, paperHardIssues, runTurn, buildSystem, safeParseArgs, apiModelOf, isComputeTool, checkNumericEvidence, classifyDecision, recordRun, recordChildRun, extractClaimNumbers, stateBlock, stampInputFiles, inputStampHash, formulaDepsBlock, repairProtocolIntegrity, isProductiveWritePath, assertSubagentProfile, budgetCheck, compactHistory, chunkSummaryMessages, runSubagent, collectCandidateLessons };
+module.exports = { MATH_SKILLS, autoPick, modeBlock, autoFinished, nextStepHint, paperHardIssues, runTurn, buildSystem, safeParseArgs, apiModelOf, isComputeTool, checkNumericEvidence, classifyDecision, recordRun, recordChildRun, extractClaimNumbers, stateBlock, stampInputFiles, inputStampHash, formulaDepsBlock, repairProtocolIntegrity, isProductiveWritePath, assertSubagentProfile, budgetCheck, compactHistory, chunkSummaryMessages, runSubagent, collectCandidateLessons, makeSpend };

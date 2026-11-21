@@ -1945,10 +1945,66 @@ function tSkillSave(ctx, a) {
   return `[技能已沉淀] ${name} → ${file}${note}\n之后 skill_load("${name}") 可调用；skill_search 能搜到。`;
 }
 
-function tSkillLoad(ctx, a) {
+async function tSkillLoad(ctx, a) {
   const r = require('./project_plan').loadSessionSkill(ctx.appDir, ctx.session, a.name, a.file, ctx.settings, { slot: a.slot, mode: a.mode });
-  if (ctx.session) ctx.session.skill_reads = [...(ctx.session.skill_reads || []), { name: r.name, version: r.version, sha256: r.sha256, source: r.source, file: a.file || null, applicability: r.applicability, at: Date.now() }].slice(-50);
-  return `# 技能 ${r.name}${r.version ? ' v' + r.version : ''}\n(来源: ${r.file} — 只读；SHA-256=${r.sha256})\n适配检查: ${r.applicability?.status || 'unknown'}；${r.applicability?.reasons.join('；') || '声明条件匹配，非数学正确性或增益证明'}\n可用参考文件: ${r.refs.join('、') || '无'}\n\n${wrapMaterial(r.content, { kind: a.file ? 'advice' : 'skill', source: r.file })}`;
+  // 首检质检：全局开关默认关；同指纹零 API 复用结论；失败绝不阻塞加载。
+  let qualityLine = '', qualityStatus = null;
+  if (!a.file) {
+    const sq = require('./skill_quality');
+    try {
+      const q = await sq.checkSkill({ appDir: ctx.appDir, settings: ctx.settings, name: r.name, sha256: r.sha256,
+        content: r.content, refs: r.refs, signal: ctx.abort && ctx.abort.signal });
+      qualityStatus = q.status;
+      if (q.status === 'checked' || q.status === 'cached' || q.status === 'declined') qualityLine = '\n' + sq.verdictText(q.marker);
+      else if (q.status === 'error') qualityLine = `\n[技能质检] 首检未完成（${q.error}）；不影响加载，下次首用重试。`;
+      else if (q.status === 'skipped') qualityLine = `\n[技能质检] ${q.reason}。`;
+      if (q.status === 'checked' && q.marker?.usage && typeof ctx.spend === 'function') {
+        try {
+          ctx.spend(String(q.marker.model).split(':').slice(1).join(':') || String(q.marker.model), {
+            prompt_tokens: Number(q.marker.usage.prompt_tokens || 0),
+            completion_tokens: Number(q.marker.usage.completion_tokens || 0),
+            cache_hit_tokens: Number(q.marker.usage.prompt_cache_hit_tokens || q.marker.usage.prompt_tokens_details?.cached_tokens || 0),
+          }, 'skill_quality');
+        } catch { /* 质检计费失败不能拖垮加载 */ }
+      }
+    } catch (e) { qualityLine = `\n[技能质检] 首检异常（${String(e.message || e).slice(0, 120)}）；不影响加载。`; }
+  }
+  if (ctx.session) ctx.session.skill_reads = [...(ctx.session.skill_reads || []), { name: r.name, version: r.version, sha256: r.sha256, source: r.source, file: a.file || null, applicability: r.applicability, quality: qualityStatus, at: Date.now() }].slice(-50);
+  return `# 技能 ${r.name}${r.version ? ' v' + r.version : ''}\n(来源: ${r.file} — 只读；SHA-256=${r.sha256})\n适配检查: ${r.applicability?.status || 'unknown'}；${r.applicability?.reasons.join('；') || '声明条件匹配，非数学正确性或增益证明'}\n可用参考文件: ${r.refs.join('、') || '无'}${qualityLine}\n\n${wrapMaterial(r.content, { kind: a.file ? 'advice' : 'skill', source: r.file })}`;
+}
+
+// 技能质检的显式入口：status 查结论；skip 标记跳过此版本；repair 须用户明确同意后
+// 才生成修复副本（原件不动，副本落羲和私有 skills/，新指纹会重新首检）。
+async function tSkillQuality(ctx, a) {
+  const sq = require('./skill_quality');
+  const options = require('./project_plan').skillOptions(ctx.settings, ctx.session?.skill_plan_snapshot?.root);
+  const loaded = require('./skills').loadSkill(ctx.appDir, a.name, null, options);
+  const op = a.op || 'status';
+  if (op === 'status') {
+    if (!sq.settingsOf(ctx.settings).enabled) return '技能质检未启用；可在设置页打开「技能首检质检」。';
+    const marker = loaded.sha256 ? sq.readMarker(ctx.appDir, loaded.sha256) : null;
+    if (!marker) return `技能 ${loaded.name} 此版本尚未质检；skill_load 加载正文时会自动首检。`;
+    return sq.verdictText(marker) || `标记状态：${marker.status}`;
+  }
+  if (op === 'skip') {
+    if (!loaded.sha256) throw new Error('该技能无法生成完整指纹，无法标记');
+    sq.declineSkill(ctx.appDir, { name: loaded.name, sha256: loaded.sha256 });
+    return `已标记跳过 ${loaded.name} 此版本的质检（指纹 ${loaded.sha256.slice(0, 12)}…）。内容变化后视为新版本，会重新首检。`;
+  }
+  if (op === 'repair') {
+    const r = await sq.repairSkill({ appDir: ctx.appDir, settings: ctx.settings, name: loaded.name, options, signal: ctx.abort && ctx.abort.signal });
+    if (r.usage && typeof ctx.spend === 'function') {
+      try {
+        ctx.spend(String(r.model).split(':').slice(1).join(':') || String(r.model), {
+          prompt_tokens: Number(r.usage.prompt_tokens || 0),
+          completion_tokens: Number(r.usage.completion_tokens || 0),
+          cache_hit_tokens: Number(r.usage.prompt_cache_hit_tokens || r.usage.prompt_tokens_details?.cached_tokens || 0),
+        }, 'skill_quality');
+      } catch { /* 计费失败不拖垮修复 */ }
+    }
+    return `[修复副本已生成] ${r.name}（${r.mode === 'rewrite' ? '最小重写' : '批注覆盖：重写超输出预算，原文保留并以批注为准，已如实披露'}，处理 ${r.issues} 处问题）→ ${r.dir}\n原件 ${r.source} 未动。副本是新技能：skill_load("${r.name}") 可用，首次加载会按新指纹重新首检。`;
+  }
+  throw new Error('op 须为 status/skip/repair');
 }
 
 function tSkillSearch(ctx, a) {
@@ -4132,7 +4188,7 @@ const PURPOSE_OF_TOOL = {
   kb_search: '检索本地范文知识库', kb_read: '回读范文上下文', kb_build: '构建知识库索引',
   spreadsheet_diff: '结果互验（逐格比对）', result_align: '结果表对齐题目模板', reconcile_artifact: '论文数字与结果表三方对账',
   flowchart_draw: '绘制流程图', paper_build: '论文编译（LaTeX）', support_pack: '交付材料打包',
-  memory_write: '记录经验', memory_recall: '检索经验', lesson_record: '记录教训', skill_save: '沉淀技能', skill_load: '调用技能', skill_search: '查找技能',
+  memory_write: '记录经验', memory_recall: '检索经验', lesson_record: '记录教训', skill_save: '沉淀技能', skill_load: '调用技能', skill_search: '查找技能', skill_quality: '技能质检',
   todo_write: '任务清单', ask_user: '向用户确认关键决策', dispatch_external: '外部模型复核', subagent_run: '子代理（独立审查/计算）',
   dispatch_child: '子会话分发', rollback_artifact: '回滚产物', '': '其他',
 };
@@ -4760,6 +4816,7 @@ const TOOLS = [
   { name: 'skill_save', desc: '把验证过的做法沉淀成新技能（写入羲和自己 skills/ 目录，共享技能库只读不受影响）。重名覆盖自动留 .bak。lesson_record 记"别再做错"，skill_save 记"以后这么做"——一条经验反复命中就该固化成技能', params: { name: { t: 'string', d: '小写 kebab-case，如 fvm-ode15s-template' }, description: { t: 'string', d: '一句话：什么时候用这个技能（检索全靠它）' }, content: { t: 'string', d: '技能正文：步骤/模板代码/注意事项' }, version: { t: 'string', d: '默认 1.0' } }, req: ['name', 'description', 'content'], run: tSkillSave },
   { name: 'skill_load', desc: '读取本地技能 SKILL.md 或其 references/ 下文件（只读），执行适配与冲突检查。冻结选择自动沿用原槽位；额外技能默认作为research补充。', params: { name: { t: 'string' }, file: { t: 'string', d: '可选，references 下的文件名' }, slot: { t: 'string', enum: ['main', 'research', 'figures', 'review'], d: '额外技能的实际用途槽位；冻结选择默认沿用原槽位' }, mode: { t: 'string', enum: ['append', 'replace'], d: '额外技能默认append；不能绕过适配检查' } }, req: ['name'], run: tSkillLoad },
   { name: 'skill_search', desc: '按关键词搜索本地技能库', params: { query: { t: 'string' } }, req: ['query'], run: tSkillSearch },
+  { name: 'skill_quality', desc: '技能首检质检：status 查此版本质检结论；skip 标记跳过此版本质检；repair 在用户明确同意后生成修复副本（共享原件不动，副本落羲和私有技能库并重新首检）。首检本身在 skill_load 时自动触发（须设置启用，同指纹不重复检测）。', params: { op: { t: 'string', enum: ['status', 'skip', 'repair'], d: '默认 status；repair 必须先征得用户同意' }, name: { t: 'string', d: '技能名' } }, req: ['name'], run: tSkillQuality },
   { name: 'contract_register', desc: '登记题目契约（math 模式读题后第一件事）：11 类条款 — entity/boundary/unit/goal/assumption/rule/counterexample + interval_convention（时段区间开/闭/半开约定）+ baseline_definition（无储能基准口径：电价/弃光/负荷覆盖三维）+ ambiguity（题目歧义点：text 必须写明「歧义点+选了哪个解释+理由」，防默默选一个不打招呼）+ information_boundary（信息可用边界：哪时点只能用哪些数据，如「0:00 计划禁用当天实际值」——C 题 B1 红线登记口），各带原文位置（题目第N页/附件N）。契约独立于聊天摘要存活（长对话压缩不丢、每轮注入推理上下文），修订会自动作废旧结果。历史教训：几何/实体对象理解错了（越界/区间/基线），后面所有精细计算跟着错——契约是第一道防线', params: { items: { t: 'array', d: '[{kind: entity|boundary|unit|goal|assumption|rule|counterexample|interval_convention|baseline_definition|ambiguity|information_boundary, key: 条款标识, text: 条款内容, source: 题目第N页/附件N, scope: 可选 — 限定生效范围（如 Q4_benchmark / result_sheets / decision_time）}]；同 key 修订内容会触发旧结果作废', items: { type: 'object', properties: { kind: { type: 'string', enum: CONTRACT_KINDS }, key: { type: 'string' }, text: { type: 'string' }, source: { type: 'string' }, scope: { type: 'string' } }, required: ['kind', 'key', 'text', 'source'] } } }, req: ['items'], run: tContractRegister },
   { name: 'question_graph', desc: '按题目实际问题数维护的数模比赛任务表：upsert(view|upsert|runs_view|link_run|attach_artifact|commit) 维护问题级状态/路线/依赖/假设/实验链接/实验描述/阶段产物。**link_run 前先用 op="runs_view" 列最近运行拿真实 run_id**（compute 工具返回值尾部也附 [run_id=runN epoch=M]）。v2.3 拆 experiments_desc（实验描述文本）与 experiments（run_id 引用）—前者不影响 commit 门禁。**ISS-11 merge 语义**：upsert 仅覆盖传入字段，未传字段保留旧值（不再用 ""/[]/null 覆盖 route/assumptions 等关键字段）。**ISS-11 revise 显式 bump**：默认 upsert 只改元数据不推进 data_epoch；要让下游实验失效须显式 revise:true（影响下游问题+作废旧证据）。**commit 强制门禁**（应用层复审 §10 落地）：无 link_run 的实验、无 attach_artifact 的产物、实验缺失/不稳定、依赖项非 committed——任一未满足则拒绝升级（旧 epoch 实验改为 info 提示，不再阻塞——C 题 2026 教训）。stateBlock 每轮注入（与契约并列）让 reviewer 也看到阶段进度', params: { op: { t: 'string', enum: ['view', 'spec', 'upsert', 'runs_view', 'link_run', 'attach_artifact', 'commit'] }, id: { t: 'number' }, title: { t: 'string' }, route: { t: 'string' }, route_alt: { t: 'array', items: { type: 'string' } }, status: { t: 'string', enum: ['drafting', 'reviewing', 'committed', 'failed'] }, deps: { t: 'array', items: { type: 'number' } }, assumptions: { t: 'array', items: { type: 'object', properties: { text: { type: 'string' }, source: { type: 'string' } }, required: ['text'] } }, experiments: { t: 'array', items: { type: 'string', d: 'run_id 引用（指向 session.runs）；同 key 列表变化触发下游实验失效传播' } }, experiments_desc: { t: 'array', items: { type: 'string', d: '实验描述文本（不引用 run）；常驻描述/方法说明，修订不触发失效传播' } }, notes: { t: 'string' }, conventions: { t: 'object', d: '可选：方法约定登记（有实质影响的约定需登记）。键：solver/grid/tolerance/boundary_extension/moving_boundary/endpoint_criterion/statistics_method:exact|stochastic/prediction_structure:time_series|cross_sectional/other，如 {statistics_method:"exact"} 或 {prediction_structure:"cross_sectional"}' }, revise: { t: 'boolean', d: 'ISS-11：true=这是建模决策修订（路线/假设/数据变了），触发 data_epoch++ + 下游实验失效传播；false 或省略=纯元数据修改（标题/状态/备注微调），不影响 epoch——避免刚 link 的 run 立刻变 stale' }, run_id: { t: 'string', d: 'op=link_run 时必填：关联到 session.runs 中的某个 run_id' }, path: { t: 'string', d: 'op=attach_artifact 时必填：工作区相对路径（图表/结果文件/报告）' }, kind: { t: 'string', d: 'op=attach_artifact 时可选：figure/table/result/report/code（默认 figure）' }, note: { t: 'string', d: 'op=attach_artifact 时可选：产物说明' }, type: { t: 'string', enum: ['optimization', 'prediction', 'statistics', 'mechanism', 'evaluation'], d: '题型（v2.5）：optimization 优化类 / prediction 预测类 / statistics 统计类 / mechanism 机理类 / evaluation 评价类。登记后 commit 会追加该类题型的硬检查——优化类要求optimization_check绑定正式结果并回代目标、约束和结论范围（也从模型规格识别优化题）、时序预测禁止随机打乱，非时序说明分层/分组划分；使用 scaler 时仅在训练集拟合、统计类按方法区分：精确计算需运行校验，随机模拟需种子、重复运行及离散度。未登记则不做分型检查' } }, req: ['op'], run: tQuestionGraph },
   { name: 'conservation_check', desc: '守恒/平衡审计（math 模式 commit 硬门禁，A 题对比获奖答案后沉淀）：获奖答案每个主解都跑「∫C·r dr 初末差 vs 表面通量时间积分」并报告相对误差——此前只是提示词里的一条自查，顺手不写就漏，现在升级为「公式登记」级强制。**引擎自己算**闭合残差与相对误差（不给模型自报的机会）：末值−初值 = 边界净通量(+源汇)。三选一才能 commit：① op=register 登记一次实算结果（须来自 formal 运行；不通过时先查符号约定/边界项漏算/网格是否够密）；② op=not_applicable 声明本题没有守恒量并**写明替代检验**（约束可行性回代/量纲检查/解析小例/独立互验）；③ op=waived 带 reason 豁免超容差（留痕，论文检验节须说明残差来源）。**不要靠改 tolerance 凑过**。', params: { op: { t: 'string', enum: ['register', 'not_applicable', 'waived', 'view'] }, question: { t: 'number', d: '问题号 1-20' }, quantity: { t: 'string', d: 'register 必填：被审计的量，如「水分质量 ∫C·r dr」/「总能量」/「物料平衡总量」' }, initial: { t: 'number', d: 'register 必填：初时刻该量的值' }, final: { t: 'number', d: 'register 必填：末时刻该量的值' }, boundary_flux: { t: 'number', d: 'register 必填：边界净通量的时间积分（与初末差同量纲，正=流入）' }, source_sink: { t: 'number', d: '可选：内部源汇的时间积分' }, tolerance: { t: 'number', d: '相对误差容差，默认 0.01（=1%）' }, run_id: { t: 'string', d: 'register 必填：承载这些数字的 formal 运行 id' }, note: { t: 'string' }, reason: { t: 'string', d: 'not_applicable / waived 必填' }, alternative: { t: 'string', d: 'not_applicable 必填：替代检验手段' } }, req: ['op'], run: tConservationCheck },

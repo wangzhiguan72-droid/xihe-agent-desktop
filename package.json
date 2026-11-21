@@ -20,7 +20,7 @@
     "test:cache": "node core/test_cache_diagnostics.js && node core/test_cache_transport.js && node core/test_cache_api.js && node core/test_cache_live_probe.js && node core/test_recovery_receipts.js",
     "test:iteration": "node core/test_iteration_evidence.js && node core/test_iteration_computation.js && node core/test_iteration_analytical.js",
     "test:visual": "node core/test_deep_visual.js && node core/test_reasoning_vision_cache.js",
-    "test:plans": "node core/test_skill_resolution.js && node core/test_skill_assessment.js && node core/test_skill_gain.js && node core/test_project_plan.js && node core/test_project_plan_api.js",
+    "test:plans": "node core/test_skill_resolution.js && node core/test_skill_assessment.js && node core/test_skill_gain.js && node core/test_skill_quality.js && node core/test_project_plan.js && node core/test_project_plan_api.js",
     "test:research": "node core/test_research_benchmark.js && python core/test_research_cases.py && node core/test_research_methods.js && node core/test_builtin_knowledge.js",
     "test:trace": "node core/test_run_artifacts.js && node core/test_claim_trace.js && node core/test_claim_trace_api.js && node core/test_claim_trace_workflow.js",
     "test:analytic": "node core/test_analytic_trace.js && node core/test_analytic_trace_workflow.js",

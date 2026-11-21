@@ -284,6 +284,15 @@
       </div>
       <div id="judgeConfigStatus" class="mini" aria-live="polite"></div>
     </details>
+    <details>
+      <summary>技能首检质检（首次使用验收）</summary>
+      <div class="mini" style="margin:4px 0 8px">打开后，每个技能首次使用时用 LLM 审一遍正文：前后矛盾、与羲和门禁冲突、含糊指令、数模写作指导缺陷，结论附在加载结果里。同指纹永久跳过重检；内容变化自动重新首检；质检失败不阻塞加载。修复副本只在你确认后生成，共享技能原件一律不动。</div>
+      <div class="grid2">
+        <label class="toggle-label"><input type="checkbox" id="setQualityEnabled"> 启用技能首检质检</label>
+        <label>质检模型<input id="setQualityModel" list="modelChoices" placeholder="留空跟随重装模型"></label>
+      </div>
+      <div id="qualityConfigStatus" class="mini" aria-live="polite"></div>
+    </details>
     <div class="grid2">
       <label>temperature<input id="setTemp" type="number" step="0.1" min="0" max="2"></label>
       <label>DeepSeek 旧推理开关<select id="setEffort"><option value="on">开启（沿用原行为）</option><option value="off">关闭</option></select></label>
@@ -376,6 +385,7 @@
   <input id="skillFilter" placeholder="搜索技能…">
   <div id="skillListBody"></div>
   <div id="skillActions" class="btnrow" style="display:none;justify-content:flex-start;gap:8px;flex-wrap:wrap"></div>
+  <div id="skQuality" class="mini" style="display:none;margin:6px 0;white-space:pre-wrap"></div>
   <pre id="skillPreview" style="display:none"></pre>
   <div class="btnrow"><button id="btnCloseSkills">关闭</button></div>
 </dialog>

@@ -256,7 +256,8 @@ function composedBlock(appDir, session, settings, wrap, slots = SLOTS) {
     if (row.status !== 'loaded' || row.blocked) { text += `${row.slot}: ${row.blocked ? '适配检查不通过：' + row.applicability.reasons.join('；') : row.status}；保留默认流程。\n`; continue; }
     const skill = loadSessionSkill(appDir, session, row.name, null, settings);
     text += `\n### ${row.slot}（${row.mode === 'replace' ? '替换主Skill中本槽位的方法建议' : '补充主Skill中本槽位的方法建议'}）\n`;
-    text += `${skill.name} v${skill.version} | SHA-256=${skill.sha256}\n` + wrap(skill.content, { kind: 'skill', source: skill.file }) + '\n';
+    text += `${skill.name} v${skill.version} | SHA-256=${skill.sha256}\n` + wrap(skill.content, { kind: 'skill', source: skill.file })
+      + require('./skill_quality').qualityWarning(appDir, skill.sha256, settings) + '\n';
   }
   text += '\n适配检查只核声明条件；未知项需先核对，固定参数不能直接当成本题事实。组合效果：'
     + (frozen.assessment?.gain?.status || 'unverified') + '；功能通过不表示建模或论文质量提升。\n';

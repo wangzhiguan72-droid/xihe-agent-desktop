@@ -8,7 +8,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawn } = require('child_process');
 const { Sandbox, createSandbox } = require('./sandbox');
-const { MATH_SKILLS, runTurn, buildSystem, stampInputFiles, inputStampHash } = require('./agent');
+const { MATH_SKILLS, runTurn, buildSystem, stampInputFiles, inputStampHash, makeSpend } = require('./agent');
 const { getIndex } = require('./skills');
 const { PROVIDERS, allProviders, customProviders, CUSTOM_ID_RE, PROTOCOL_KINDS, keyFor, providerForModel, resolveProvider } = require('./providers');
 const { DEFAULT_PRICES } = require('./pricing');
@@ -20,6 +20,7 @@ const jobResume = require('./job_resume');
 const taskFocus = require('./task_focus');
 const projectContest = require('./project_contest');
 const projectPlan = require('./project_plan');
+const skillQuality = require('./skill_quality');
 const templateLibrary = require('./template_library');
 const plugins = require('./plugins');
 
@@ -191,6 +192,40 @@ function freezeSessionPlan(session, provider, override) {
   session.claim_trace_required = !!(session.claim_trace_required || projectPlan.sessionFields(frozen.plan).claim_trace_required);
   if (!origin) session.skill_plan_origin = frozen;
 }
+// 冻结槽位的首检质检：主技能不走 skill_load，必须在这里补上，否则永远漏检。
+// 后台异步、不阻塞开赛；同指纹已有标记时零 API。结论落盘后重建 system，
+// 让质检警告从下一轮起进入主技能注入段（buildSystem 只读本地标记）。
+function scheduleSkillQualitySweep(s) {
+  const st = loadSettings();
+  if (!skillQuality.settingsOf(st).enabled) return;
+  const entries = (s.skill_plan_snapshot?.entries || []).filter(row => row.status === 'loaded' && !row.blocked);
+  if (!entries.length) return;
+  const spend = makeSpend(s, { ledger: loadLedger(APP_DIR), settings: st, appDir: APP_DIR });
+  Promise.all(entries.map(async row => {
+    try {
+      const loaded = projectPlan.loadSessionSkill(APP_DIR, s, row.name, null, st);
+      const result = await skillQuality.checkSkill({ appDir: APP_DIR, settings: st, name: loaded.name,
+        sha256: loaded.sha256, content: loaded.content, refs: loaded.refs });
+      if (result.status === 'checked' && result.marker?.usage) {
+        try {
+          spend(String(result.marker.model).split(':').slice(1).join(':') || String(result.marker.model), {
+            prompt_tokens: Number(result.marker.usage.prompt_tokens || 0),
+            completion_tokens: Number(result.marker.usage.completion_tokens || 0),
+            cache_hit_tokens: Number(result.marker.usage.prompt_cache_hit_tokens || result.marker.usage.prompt_tokens_details?.cached_tokens || 0),
+          }, 'skill_quality');
+        } catch { /* 质检计费失败不拖垮会话 */ }
+      }
+      return result;
+    } catch { return null; }
+  })).then(results => {
+    if (!results.some(r => r && r.status === 'checked')) return;
+    try {
+      s.system = buildSystem(s.mode, sessionRoot(s), loadSettings(), APP_DIR, s.system_provider, s.skill_override, s);
+      s.skill_loaded = loadedSkillOf(s.system, s.skill_plan_snapshot);
+      persistSession(s);
+    } catch { /* 重建失败保留原 system，警告仍可在技能面板查看 */ }
+  }).catch(() => {});
+}
 function syncProjectRules(session, rules) {
   const meta = projectMetaOf(session.project_id);
   if (!meta?.contest_profile || session.project_contest_revision !== meta.contest_profile.revision) return '项目档案未同步：当前会话使用旧快照，本次规则仅保存于此会话。';
@@ -336,6 +371,13 @@ const DEFAULT_SETTINGS = {
     allow_override: false,
     swap_check: false,
   },
+  skill_quality: {
+    enabled: false,
+    provider: '',
+    model: '',
+    timeout_ms: 60000,
+    max_tokens: 4096,
+  },
   vision_model: 'glm-5.3-flash',
   vision_max_tokens: 8192, // 视觉支路独立输出预算（两条协议分支共用）
   glm_base: 'https://open.bigmodel.cn/api/anthropic', // coding-plan 订阅端点（paas/v4 需另充平台余额）
@@ -380,6 +422,15 @@ function validateModelSettingsPayload(payload, currentSettings = {}) {
     if (j.min_confidence != null && (!Number.isFinite(Number(j.min_confidence)) || Number(j.min_confidence) < 0 || Number(j.min_confidence) > 1)) throw new Error('decision_judge.min_confidence 必须在0到1之间');
     for (const key of ['auto_override', 'allow_override', 'swap_check']) if (j[key] != null && typeof j[key] !== 'boolean') throw new Error(`decision_judge.${key} 必须是布尔值`);
     b.decision_judge = { ...j, trigger: j.trigger || 'on_demand', timeout_ms: j.timeout_ms == null ? 12000 : Math.min(Number(j.timeout_ms), 60000), max_tokens: j.max_tokens == null ? 512 : Math.min(Number(j.max_tokens), 1024), min_confidence: j.min_confidence == null ? 0.82 : Number(j.min_confidence), auto_override: j.auto_override === true, allow_override: j.allow_override === true, swap_check: j.swap_check === true };
+  }
+  if (Object.hasOwn(b, 'skill_quality')) {
+    const q = b.skill_quality;
+    if (!q || typeof q !== 'object' || Array.isArray(q)) throw new Error('skill_quality 必须是对象');
+    if (q.enabled != null && typeof q.enabled !== 'boolean') throw new Error('skill_quality.enabled 必须是布尔值');
+    for (const key of ['provider', 'model']) if (q[key] != null && (typeof q[key] !== 'string' || q[key].length > 200)) throw new Error(`skill_quality.${key} 无效`);
+    for (const key of ['timeout_ms', 'max_tokens']) if (q[key] != null && (!Number.isFinite(Number(q[key])) || Number(q[key]) < 1)) throw new Error(`skill_quality.${key} 无效`);
+    b.skill_quality = { ...q, enabled: q.enabled === true, provider: String(q.provider || '').trim(), model: String(q.model || '').trim(),
+      timeout_ms: q.timeout_ms == null ? 60000 : Math.min(Number(q.timeout_ms), 180000), max_tokens: q.max_tokens == null ? 4096 : Math.min(Number(q.max_tokens), 8192) };
   }
   if (Object.hasOwn(b, 'provider_kinds')) {
     if (!b.provider_kinds || typeof b.provider_kinds !== 'object' || Array.isArray(b.provider_kinds)) throw new Error('provider_kinds 必须是对象');
@@ -443,6 +494,7 @@ function loadSettings() {
   const merged = { ...DEFAULT_SETTINGS, ...s, prices: { ...DEFAULT_PRICES, ...(s.prices || {}) } };
   merged.role_models = normalizeRoleModels(merged.role_models);
   merged.decision_judge = { ...DEFAULT_SETTINGS.decision_judge, ...(s.decision_judge || {}) };
+  merged.skill_quality = { ...DEFAULT_SETTINGS.skill_quality, ...(s.skill_quality || {}) };
   return merged;
 }
 function saveSettings(s) {
@@ -502,6 +554,7 @@ function newSession(mode, title, projectId, options = {}) {
         if (parent[key] !== undefined) s[key] = JSON.parse(JSON.stringify(parent[key]));
       }
     } else freezeSessionPlan(s, s.system_provider, null);
+    scheduleSkillQualitySweep(s);
   }
   s.system = buildSystem(s.mode, wsRoot, st, APP_DIR, s.system_provider, null, s);
   // 真实技能加载信息（前端显示真值，不再硬编码文案）
@@ -1310,6 +1363,7 @@ const server = http.createServer(async (req, res) => {
       if (s.skill_plan_snapshot) {
         try { freezeSessionPlan(s, s.system_provider || 'deepseek', want || null); }
         catch (e) { return json(res, 400, { error: '方案快照失败：' + e.message }); }
+        scheduleSkillQualitySweep(s);
       }
       s.skill_override = want || null;
       s.system = buildSystem(s.mode, sessionRoot(s), loadSettings(), APP_DIR, s.system_provider || 'deepseek', s.skill_override, s);
@@ -1580,6 +1634,78 @@ const server = http.createServer(async (req, res) => {
       if (b.session_id && !session) return json(res, 404, { error: '会话不存在' });
       try { const r = projectPlan.loadSessionSkill(APP_DIR, session, b.name, b.file, loadSettings()); return json(res, 200, { content: r.content.slice(0, 40000) }); }
       catch (e) { return json(res, 400, { error: e.message }); }
+    }
+    // ---------- 技能首检质检（全局开关默认关；同指纹零 API；修复须用户确认） ----------
+    if (p === '/api/skill/quality' && req.method === 'POST') {
+      const b = JSON.parse((await readBody(req)).toString() || '{}');
+      const session = b.session_id ? getSession(b.session_id) : null;
+      if (b.session_id && !session) return json(res, 404, { error: '会话不存在' });
+      try {
+        // 质检与槽位适配无关：用 loadSkill（同 skill_quality 工具），main-only 技能无会话也能查。
+        const r = require('./skills').loadSkill(APP_DIR, b.name, null, projectPlan.skillOptions(loadSettings(), session?.skill_plan_snapshot?.root));
+        const marker = r.sha256 ? skillQuality.readMarker(APP_DIR, r.sha256) : null;
+        return json(res, 200, { enabled: skillQuality.settingsOf(loadSettings()).enabled, sha256: r.sha256, marker });
+      } catch (e) { return json(res, 400, { error: e.message }); }
+    }
+    if (p === '/api/skill/quality/skip' && req.method === 'POST') {
+      const b = JSON.parse((await readBody(req)).toString() || '{}');
+      const session = b.session_id ? getSession(b.session_id) : null;
+      if (b.session_id && !session) return json(res, 404, { error: '会话不存在' });
+      try {
+        const r = require('./skills').loadSkill(APP_DIR, b.name, null, projectPlan.skillOptions(loadSettings(), session?.skill_plan_snapshot?.root));
+        if (!r.sha256) throw new Error('该技能无法生成完整指纹，无法标记');
+        const marker = skillQuality.declineSkill(APP_DIR, { name: r.name, sha256: r.sha256 });
+        return json(res, 200, { ok: true, marker });
+      } catch (e) { return json(res, 400, { error: e.message }); }
+    }
+    if (p === '/api/skill/quality/recheck' && req.method === 'POST') {
+      const b = JSON.parse((await readBody(req)).toString() || '{}');
+      const session = b.session_id ? getSession(b.session_id) : null;
+      if (b.session_id && !session) return json(res, 404, { error: '会话不存在' });
+      const st = loadSettings();
+      try {
+        const r = require('./skills').loadSkill(APP_DIR, b.name, null, projectPlan.skillOptions(st, session?.skill_plan_snapshot?.root));
+        const result = await skillQuality.checkSkill({ appDir: APP_DIR, settings: st, name: r.name,
+          sha256: r.sha256, content: r.content, refs: r.refs, force: true });
+        if (result.status === 'checked' && result.marker?.usage) {
+          const usage = {
+            prompt_tokens: Number(result.marker.usage.prompt_tokens || 0),
+            completion_tokens: Number(result.marker.usage.completion_tokens || 0),
+            cache_hit_tokens: Number(result.marker.usage.prompt_cache_hit_tokens || result.marker.usage.prompt_tokens_details?.cached_tokens || 0),
+          };
+          const model = String(result.marker.model).split(':').slice(1).join(':') || String(result.marker.model);
+          if (session) { try { makeSpend(session, { ledger: loadLedger(APP_DIR), settings: st, appDir: APP_DIR })(model, usage, 'skill_quality'); } catch {} }
+          else require('./meter').record(APP_DIR, { t: Date.now(), model, kind: 'skill_quality', session_id: null, project_id: null, ...usage });
+        }
+        if (session && result.status === 'checked') {
+          try {
+            session.system = buildSystem(session.mode, sessionRoot(session), st, APP_DIR, session.system_provider, session.skill_override, session);
+            persistSession(session);
+          } catch {}
+        }
+        return json(res, 200, result);
+      } catch (e) { return json(res, 400, { error: e.message }); }
+    }
+    if (p === '/api/skill/quality/repair' && req.method === 'POST') {
+      const b = JSON.parse((await readBody(req)).toString() || '{}');
+      const session = b.session_id ? getSession(b.session_id) : null;
+      if (b.session_id && !session) return json(res, 404, { error: '会话不存在' });
+      const st = loadSettings();
+      try {
+        const options = projectPlan.skillOptions(st, session?.skill_plan_snapshot?.root);
+        const result = await skillQuality.repairSkill({ appDir: APP_DIR, settings: st, name: b.name, options });
+        if (result.usage) {
+          const usage = {
+            prompt_tokens: Number(result.usage.prompt_tokens || 0),
+            completion_tokens: Number(result.usage.completion_tokens || 0),
+            cache_hit_tokens: Number(result.usage.prompt_cache_hit_tokens || result.usage.prompt_tokens_details?.cached_tokens || 0),
+          };
+          const model = String(result.model).split(':').slice(1).join(':') || String(result.model);
+          if (session) { try { makeSpend(session, { ledger: loadLedger(APP_DIR), settings: st, appDir: APP_DIR })(model, usage, 'skill_quality'); } catch {} }
+          else require('./meter').record(APP_DIR, { t: Date.now(), model, kind: 'skill_quality', session_id: null, project_id: null, ...usage });
+        }
+        return json(res, 200, result);
+      } catch (e) { return json(res, 400, { error: e.message }); }
     }
     json(res, 404, { error: 'no route: ' + p });
   } catch (e) {

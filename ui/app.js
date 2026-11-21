@@ -1675,6 +1675,12 @@ async function openSettings(focusReasoning = false, trigger = null) {
     $('#judgeConfigStatus').textContent = dj.enabled
       ? (judgeKeyReady ? '判断层已启用；分歧和低置信度会升级给主模型或人。' : '判断层已启用，但当前供应商尚未配置 Key；运行时会安全回退。')
       : '判断层当前关闭；下方供应商配置只在你打开后参与判断。';
+    const sq = s.skill_quality || {};
+    $('#setQualityEnabled').checked = sq.enabled === true;
+    $('#setQualityModel').value = sq.provider && sq.model && !String(sq.model).includes(':') ? `${sq.provider}:${sq.model}` : (sq.model || '');
+    $('#qualityConfigStatus').textContent = sq.enabled
+      ? '技能首检质检已启用：首次使用自动审一遍，同指纹跳过；修复副本须你确认。'
+      : '技能首检质检当前关闭；技能照常加载，不产生质检调用。';
     $('#modelChoices').innerHTML = (b.models || []).map(m => `<option value="${esc(m.provider + ':' + m.id)}">${esc(m.providerName || m.provider)}</option>`).join('');
     $('#setTemp').value = s.temperature; $('#setEffort').value = s.reasoning_effort;
     $('#reasoningModelFilter').value = '';
@@ -1733,6 +1739,17 @@ $('#btnSaveSettings').onclick = async () => {
         auto_override: false,
         allow_override: false,
         swap_check: $('#setJudgeSwap').checked,
+      };
+    })(),
+    skill_quality: (() => {
+      const raw = $('#setQualityModel').value.trim();
+      const sep = raw.indexOf(':');
+      return {
+        enabled: $('#setQualityEnabled').checked,
+        provider: sep > 0 ? raw.slice(0, sep) : '',
+        model: sep > 0 ? raw.slice(sep + 1) : raw,
+        timeout_ms: (s.skill_quality && s.skill_quality.timeout_ms) || 60000,
+        max_tokens: (s.skill_quality && s.skill_quality.max_tokens) || 4096,
       };
     })(),
     temperature: +$('#setTemp').value, reasoning_effort: $('#setEffort').value,
@@ -2342,6 +2359,7 @@ async function openSkills() {
   renderMyCumcm();
   $('#dlgSkills').showModal();
   $('#skillPreview').style.display = 'none';
+  $('#skQuality').style.display = 'none';
   renderSkillList('');
 }
 $('#skillOverride').addEventListener('change', async (e) => {
@@ -2395,6 +2413,65 @@ async function showSkillPreview(name) {
       showSkillPreview(name);
     } catch (e) { alert('设置失败：' + e.message); }
   };
+  renderSkillQuality(name);
+}
+
+// 技能首检质检面板：结论 + 重检/跳过/生成修复副本。修复按钮点击即用户确认，
+// 服务端只生成独立副本（-xihe-fixed），共享原件不动。
+async function renderSkillQuality(name) {
+  const box = $('#skQuality');
+  if (!box) return;
+  box.style.display = 'none';
+  box.innerHTML = '';
+  let q;
+  try { q = await api('/api/skill/quality', { name, session_id: state.session?.id }); } catch { return; }
+  box.style.display = '';
+  if (!q.enabled) { box.textContent = '技能首检质检未启用（设置页可打开「技能首检质检」）。'; return; }
+  const m = q.marker;
+  const statusText = !q.sha256 ? '无法生成完整指纹，质检跳过'
+    : !m ? '此版本尚未质检；skill_load 首次加载正文时自动首检'
+    : m.status === 'declined' ? '已跳过此版本质检'
+    : m.verdict?.status === 'ok' ? '质检通过'
+    : m.verdict?.status === 'conflict' ? '质检发现严重问题' : '质检发现问题';
+  const head = document.createElement('div');
+  head.innerHTML = `<b>首检质检：${esc(statusText)}</b>` + (m && m.status !== 'declined' && m.model ? ` <span class="mini">${esc(m.model)} · ${esc(m.scope || '')}</span>` : '');
+  box.appendChild(head);
+  if (m && m.verdict && m.verdict.summary) {
+    const sum = document.createElement('div');
+    sum.textContent = m.verdict.summary;
+    box.appendChild(sum);
+  }
+  if (m && m.verdict && m.verdict.issues && m.verdict.issues.length) {
+    const list = document.createElement('div');
+    list.textContent = m.verdict.issues.map((row, i) => `${i + 1}. [${row.severity}]${row.where ? ' ' + row.where : ''} ${row.problem}${row.fix ? ' → 修复建议：' + row.fix : ''}`).join('\n');
+    box.appendChild(list);
+  }
+  const btnrow = document.createElement('div');
+  btnrow.className = 'btnrow';
+  btnrow.style.justifyContent = 'flex-start';
+  const mk = (label, title, fn) => { const b = document.createElement('button'); b.textContent = label; b.title = title; b.onclick = fn; btnrow.appendChild(b); return b; };
+  mk('重新质检', '忽略已有标记，强制重新质检此版本（消耗一次 LLM 调用）', async (e) => {
+    e.target.disabled = true;
+    try {
+      const r = await api('/api/skill/quality/recheck', { name, session_id: state.session?.id });
+      if (r.status === 'error') alert('质检未完成：' + r.error);
+    } catch (err) { alert('质检失败：' + err.message); }
+    renderSkillQuality(name);
+  });
+  if (!m || m.status !== 'declined') mk('跳过质检', '标记跳过此版本质检；内容变化后视为新版本会重新首检', async () => {
+    try { await api('/api/skill/quality/skip', { name, session_id: state.session?.id }); } catch (err) { alert('标记失败：' + err.message); }
+    renderSkillQuality(name);
+  });
+  if (m && m.verdict && m.verdict.issues && m.verdict.issues.length) mk('生成修复副本', '确认后生成 -xihe-fixed 新技能到羲和私有技能库；原件不动', async (e) => {
+    if (!confirm(`将按质检发现的 ${m.verdict.issues.length} 处问题生成修复副本（原件 ${name} 不动，副本可对比回退）。继续？`)) return;
+    e.target.disabled = true;
+    try {
+      const r = await api('/api/skill/quality/repair', { name, session_id: state.session?.id });
+      alert(`修复副本已生成：${r.name}（${r.mode === 'rewrite' ? '最小重写' : '批注覆盖：重写超输出预算，原文保留并以批注为准'}）。可在技能列表加载它。`);
+    } catch (err) { alert('修复失败：' + err.message); }
+    renderSkillQuality(name);
+  });
+  box.appendChild(btnrow);
 }
 
 // ---------- 初始化 ----------
