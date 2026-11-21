@@ -2384,6 +2384,8 @@ function renderSkillList(filter) {
 //  「让羲和读这个技能」= 往对话里发一句指令，模型会 skill_load 它（**调用一次**，用完即走）
 //  「设为本次会话主技能」= 覆盖自动加载（换掉灌进 system 的那份正文，整场生效）
 async function showSkillPreview(name) {
+  // 质检面板独立于预览：main-only 技能无会话时预览会被适配门禁挡住，质检仍须可查。
+  renderSkillQuality(name);
   const pv = await api('/api/skill/preview', { name, session_id: state.session?.id });
   const pre = $('#skillPreview');
   const actions = $('#skillActions');
@@ -2413,7 +2415,6 @@ async function showSkillPreview(name) {
       showSkillPreview(name);
     } catch (e) { alert('设置失败：' + e.message); }
   };
-  renderSkillQuality(name);
 }
 
 // 技能首检质检面板：结论 + 重检/跳过/生成修复副本。修复按钮点击即用户确认，
