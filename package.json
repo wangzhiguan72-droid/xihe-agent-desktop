@@ -1,6 +1,6 @@
 {
   "name": "xihe-agent",
-  "version": "2.9.0",
+  "version": "2.10.0",
   "description": "羲和 Agent — 桌面端多模型数模/编程智能体运行时",
   "main": "main.js",
   "type": "commonjs",

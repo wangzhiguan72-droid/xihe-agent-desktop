@@ -133,7 +133,7 @@ async function callAcademic(settings = {}, input = {}) {
         }
       }
     });
-    send(1, 'initialize', { protocolVersion: PROTOCOL_VERSION, capabilities: {}, clientInfo: { name: 'xihe-agent', version: '2.9.0' } });
+    send(1, 'initialize', { protocolVersion: PROTOCOL_VERSION, capabilities: {}, clientInfo: { name: 'xihe-agent', version: '2.10.0' } });
   });
 }
 
