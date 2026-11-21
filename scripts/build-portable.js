@@ -98,6 +98,18 @@ fs.rmSync(STAGE, { recursive: true, force: true });
 fs.mkdirSync(APP, { recursive: true });
 for (const entry of APP_ENTRIES) copyEntry(entry);
 
+// 开发机残留（gitignore 的测试计量与 Python 缓存）不进发行包。
+fs.rmSync(path.join(APP, 'core', 'data'), { recursive: true, force: true });
+(function prune(dir) {
+  for (const ent of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, ent.name);
+    if (ent.isDirectory()) {
+      if (ent.name === '__pycache__') fs.rmSync(p, { recursive: true, force: true });
+      else prune(p);
+    } else if (/\.pyc$/i.test(ent.name)) fs.rmSync(p, { force: true });
+  }
+})(APP);
+
 fs.mkdirSync(path.join(STAGE, 'config'), { recursive: true });
 fs.copyFileSync(path.join(ROOT, 'config', 'settings.example.json'), path.join(STAGE, 'config', 'settings.example.json'));
 copyDir(path.join(ROOT, 'data', 'kb'), path.join(STAGE, 'data', 'kb'));
