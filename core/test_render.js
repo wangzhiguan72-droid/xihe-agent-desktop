@@ -913,7 +913,7 @@ function lookupIds(js) {
 
   await client.evaluate("document.querySelector('#dlgSettings').close()");
 
-  await check('结构化决策卡：3 个候选、显式推荐、依据与自定义理由随选择提交', async () => {
+  await check('结构化决策卡：候选、显式推荐、依据与自定义理由随选择提交', async () => {
     const r = await client.evaluate(`(() => {
       const savedSend = sendText, savedAlert = window.alert;
       const sent = [], alerts = [];
@@ -950,7 +950,26 @@ function lookupIds(js) {
     assert(r.sent[1].decision.selected_id === 'custom' && r.sent[1].decision.custom_text === '自行设计方法' && r.sent[1].decision.rationale === '题目有额外约束', '自定义提交信息缺失');
     assert(r.sent[2].decision.action === 'clarify' && r.sent[2].decision.decision_id === 'render-decision' && r.sent[2].decision.question === '为什么不选 a？', '追问未绑定原卡片');
     assert(r.restored === 3, '历史重绘丢失结构化决策卡');
-    return '3 候选 + 1 自定义，推荐与理由正确，历史可恢复';
+    return '候选 + 自定义，推荐与理由正确，历史可恢复';
+  });
+
+  await check('结构化决策卡：2–6 个候选均可渲染，自定义入口不写死第四项', async () => {
+    const r = await client.evaluate(`(() => {
+      const render = ids => {
+        const q = { question:'选择方法', decision_id:'render-' + ids.length, recommended_id:ids[0], recommendation_reason:'依据对比',
+          candidates:ids.map(id => ({ id, label:'方案'+id, basis:'依据'+id, tradeoff:'耗时', risk:'风险'+id })) };
+        showQuestion(q.question, [], q);
+        const card = document.querySelector('#liveQ');
+        return { count:card.querySelectorAll('.decision-option').length,
+          placeholder:card.querySelector('textarea').placeholder };
+      };
+      const two = render(['a','b']);
+      const six = render(['a','b','c','d','e','f']);
+      return { two:two.count, six:six.count, twoPlaceholder:two.placeholder };
+    })()`);
+    assert(r.two === 2 && r.six === 6, '候选数渲染错误：' + JSON.stringify(r));
+    assert(/自定义方案/.test(r.twoPlaceholder) && !/第四项/.test(r.twoPlaceholder), '自定义入口提示写死：' + JSON.stringify(r));
+    return '2 与 6 候选均正常，自定义入口独立';
   });
 
   await check('协同切全自动：待答结构化决策使用推荐 id 并携带卡片绑定', async () => {

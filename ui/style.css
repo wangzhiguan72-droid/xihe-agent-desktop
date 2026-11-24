@@ -291,7 +291,7 @@ button.ghost.tiny:hover { opacity: 1; }
 .sess .a:hover, .sess .x:hover { opacity: 1; }
 .sess.pinned { border-left: 2px solid var(--gold); }
 
-/* Structured 3+1 decision cards */
+/* Structured decision cards (2–6 candidates + custom) */
 .qcard .decision-option { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; width: 100%; text-align: left; white-space: normal; }
 .qcard .decision-option span { font-size: 12px; opacity: .85; }
 .qcard .decision-judgment { padding: 10px; border-left: 3px solid var(--gold); line-height: 1.6; }

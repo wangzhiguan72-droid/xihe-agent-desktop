@@ -274,11 +274,11 @@
     </details>
     <details open>
       <summary>判断层（Jev / 有限选项复核）</summary>
-      <div class="mini" style="margin:4px 0 8px">只复核 3 个候选方案，不参与建模和论文生成。默认策略是“与主模型一致且置信度达到门槛才记为通过”；分歧或低置信度只升级，不自动改选。密钥仍由上面的供应商配置管理。</div>
+      <div class="mini" style="margin:4px 0 8px">只复核恰好 3 个候选的结构化决策卡，不参与建模和论文生成；2 个或 4–6 个候选的卡片保留主模型推荐，不进入判断层。默认策略是“与主模型一致且置信度达到门槛才记为通过”；分歧或低置信度只升级，不自动改选。密钥仍由上面的供应商配置管理。</div>
       <div class="grid2">
         <label class="toggle-label"><input type="checkbox" id="setJudgeEnabled"> 启用判断层</label>
         <label>判断模型<input id="setJudgeModel" list="modelChoices" placeholder="如 tokenrhythm:neohorse-1-9b"></label>
-        <label>使用时机<select id="setJudgeTrigger"><option value="on_demand">按需：只在模型显式调用时使用</option><option value="smart">智能触发：低风险筛选时自动复核</option><option value="always">每张 3+1 卡：实验/高成本模式</option></select></label>
+        <label>使用时机<select id="setJudgeTrigger"><option value="on_demand">按需：只在模型显式调用时使用</option><option value="smart">智能触发：低风险筛选时自动复核</option><option value="always">每张恰好 3 候选的卡：实验/高成本模式</option></select></label>
         <label>最低置信度<input id="setJudgeThreshold" type="number" step="0.01" min="0" max="1"></label>
         <label class="toggle-label"><input type="checkbox" id="setJudgeSwap"> 交换顺序双评（防位置偏差，判断调用×2）</label>
       </div>

@@ -584,7 +584,7 @@ function showQuestion(q, options, decision) {
     });
     opts.appendChild(reason);
     const custom = document.createElement('textarea');
-    custom.placeholder = '第四项：填写自定义方案';
+    custom.placeholder = '自定义方案（不在上述候选中）';
     opts.appendChild(custom);
     const submit = document.createElement('button');
     submit.className = 'decision-custom-submit';

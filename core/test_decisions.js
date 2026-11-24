@@ -47,7 +47,14 @@ assert.equal(q.recommendation_reason, recommendation_reason);
 assert.equal(recommendedChoice(q).id, 'b');
 assert.throws(() => createDecision({ question: 'x', candidates, recommended_id: 'b' }), /推荐判断/);
 assert.throws(() => createDecision({ question: 'x', candidates, recommended_id: 'b', recommendation_reason: ' ' }), /推荐判断/);
-assert.throws(() => createDecision({ question: 'x', candidates: candidates.slice(1), recommended_id: 'b' }), /3/);
+const two = createDecision({ question: 'x', candidates: candidates.slice(0, 2), recommended_id: 'b', recommendation_reason });
+assert.equal(two.candidates.length, 2);
+const six = createDecision({ question: 'x', recommended_id: 'c', recommendation_reason,
+  candidates: ['a', 'b', 'c', 'd', 'e', 'f'].map(id => ({ id, label: '方案' + id, basis: '依据' + id, risk: '风险' + id })) });
+assert.equal(six.candidates.length, 6);
+assert.throws(() => createDecision({ question: 'x', candidates: [candidates[0]], recommended_id: 'a', recommendation_reason }), /2–6/);
+assert.throws(() => createDecision({ question: 'x', recommended_id: 'a', recommendation_reason,
+  candidates: ['a', 'b', 'c', 'd', 'e', 'f', 'g'].map(id => ({ id, label: '方案' + id, basis: '依据' + id, risk: '风险' + id })) }), /2–6/);
 assert.throws(() => createDecision({ question: 'x', candidates, recommended_id: 'missing' }), /recommended_id/);
 assert.throws(() => createDecision({ question: 'x', candidates: candidates.map(c => ({ ...c, id: 'a' })), recommended_id: 'a' }), /id/);
 assert.throws(() => createDecision({ question: 'x', candidates: candidates.map(c => ({ ...c, label: '同一方案' })), recommended_id: 'b', recommendation_reason }), /区别/);

@@ -6,7 +6,9 @@ function createDecision(args) {
   if (!clean(args.question)) throw new Error('决策 question 不能为空');
   const q = { question: clean(args.question), options: Array.isArray(args.options) ? args.options.map(String) : [] };
   if (args.candidates == null) return q;
-  if (!Array.isArray(args.candidates) || args.candidates.length !== 3) throw new Error('路线决策需要恰好 3 个候选方案');
+  if (!Array.isArray(args.candidates) || args.candidates.length < 2 || args.candidates.length > 6) {
+    throw new Error('结构化决策卡需要 2–6 个有依据的候选方案；只有一个候选时用普通 options 或纯文字确认');
+  }
   const ids = new Set();
   q.candidates = args.candidates.map(c => {
     if (!c || typeof c.id !== 'string' || !/^[a-zA-Z0-9_-]{1,64}$/.test(c.id) || c.id === 'custom' || ids.has(c.id)) throw new Error('候选 id 必须唯一，且不能使用 custom');
@@ -14,7 +16,7 @@ function createDecision(args) {
     if (!clean(c.label) || !clean(c.basis) || !(clean(c.tradeoff) || clean(c.risk))) throw new Error('每项需 label、basis，以及 tradeoff 或 risk');
     return { id: c.id, label: clean(c.label), basis: clean(c.basis), tradeoff: clean(c.tradeoff), risk: clean(c.risk) };
   });
-  if (new Set(q.candidates.map(c => c.label.replace(/\s+/g, '').toLowerCase())).size !== 3) throw new Error('三个候选方案需有区别，不能重复标签');
+  if (new Set(q.candidates.map(c => c.label.replace(/\s+/g, '').toLowerCase())).size !== q.candidates.length) throw new Error('候选方案需有区别，不能重复标签');
   if (!ids.has(args.recommended_id)) throw new Error('recommended_id 必须指向候选方案');
   if (!clean(args.recommendation_reason)) throw new Error('路线决策需要推荐判断：结合题目、数据与赛时条件比较候选方案');
   q.recommended_id = args.recommended_id;
