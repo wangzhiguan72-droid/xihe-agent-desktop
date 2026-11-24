@@ -1,6 +1,6 @@
 {
   "name": "xihe-agent",
-  "version": "2.10.2",
+  "version": "2.11.0",
   "description": "羲和 Agent — 桌面端多模型数模/编程智能体运行时",
   "main": "main.js",
   "type": "commonjs",
@@ -17,7 +17,7 @@
     "test:mama": "node core/test_contest_workflows.js && node core/test_independent_verification.js && node core/test_support_policy.js && node core/test_mama_delivery.js && node core/test_contest_api.js",
     "test:contests": "node core/test_contest_packages.js && node core/test_contest_isolation.js && node core/test_project_contest.js",
     "test:practice": "node core/test_result_comparison.js && node core/test_comparison_tool.js && node core/test_review_findings.js && node core/test_verification_run.js && node core/test_result_diff.js && node core/test_repro_outputs.js && node core/test_review_snapshot.js && node core/test_acceptance_state.js && node core/test_matlab_entry.js",
-    "test:cache": "node core/test_cache_diagnostics.js && node core/test_cache_transport.js && node core/test_cache_api.js && node core/test_cache_live_probe.js && node core/test_recovery_receipts.js",
+    "test:cache": "node core/test_prompt_diagnostics.js && node core/test_cache_diagnostics.js && node core/test_cache_transport.js && node core/test_cache_api.js && node core/test_cache_live_probe.js && node core/test_recovery_receipts.js",
     "test:iteration": "node core/test_iteration_evidence.js && node core/test_iteration_computation.js && node core/test_iteration_analytical.js",
     "test:visual": "node core/test_deep_visual.js && node core/test_reasoning_vision_cache.js",
     "test:plans": "node core/test_skill_resolution.js && node core/test_skill_assessment.js && node core/test_skill_gain.js && node core/test_skill_quality.js && node core/test_project_plan.js && node core/test_project_plan_api.js",

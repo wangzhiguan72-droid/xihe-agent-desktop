@@ -32,7 +32,7 @@ const CACHE_PATHS = {
 };
 const validCount = value => Number.isSafeInteger(value) && value >= 0;
 const count = value => validCount(value) ? value : null;
-const CACHE_TARGET_PERCENT = 90;
+const CACHE_TARGET_PERCENT = 95;
 const hash = value => crypto.createHmac('sha256', PROCESS_KEY).update(value).digest('hex');
 const asJson = value => JSON.stringify(value === undefined ? null : value);
 const bytes = value => Buffer.byteLength(value, 'utf8');
@@ -299,7 +299,7 @@ function cacheTargetStatus(row) {
     || !['reported', 'zero'].includes(row.usage?.raw_cache?.state)
     || !validCount(input) || input === 0 || !validCount(cached) || cached > input
     || row.usage?.warnings?.length) return 'unverified';
-  return BigInt(cached) * 10n >= BigInt(input) * 9n ? 'met' : 'below';
+  return BigInt(cached) * 100n >= BigInt(input) * BigInt(CACHE_TARGET_PERCENT) ? 'met' : 'below';
 }
 function readSummary(appDir, { session_id, limit = 20 } = {}) {
   const dropped = droppedCounts.get(JSON.stringify([appDir, session_id])) || 0;

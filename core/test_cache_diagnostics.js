@@ -234,12 +234,12 @@ try {
       options.error || null);
     return trace;
   };
-  targetTrace(100_000, 90_000);
+  targetTrace(100_000, 95_000);
   summary = diagnostics.readSummary(appDir, { session_id: targetSession });
   assert.equal(summary.cache_target.status, 'met');
   assert.equal(summary.cache_target.met, 1);
-  targetTrace(100_000, 89_995); // 89.995% is strictly below 90%, regardless of display rounding.
-  targetTrace(1_000_000, 1_000_000); // The weighted aggregate now exceeds 90%.
+  targetTrace(100_000, 94_995); // 94.995% is strictly below 95%, regardless of display rounding.
+  targetTrace(1_000_000, 1_000_000); // The weighted aggregate now exceeds 95%.
   const missingTarget = targetTrace(100, undefined);
   targetTrace(100, 0);
   const failedTarget = targetTrace(100, 100, { error: new Error('interrupted') });
@@ -248,11 +248,11 @@ try {
   const zeroInputTarget = targetTrace(0, 0);
   const httpErrorTarget = targetTrace(100, 100, { status: 500 });
   summary = diagnostics.readSummary(appDir, { session_id: targetSession });
-  assert(summary.known_rate > 90, 'weighted aggregate can mask a low individual request');
+  assert(summary.known_rate > 95, 'weighted aggregate can mask a low individual request');
   assert.deepEqual({ met: summary.cache_target.met, below: summary.cache_target.below,
     unverified: summary.cache_target.unverified, status: summary.cache_target.status },
   { met: 2, below: 2, unverified: 6, status: 'below' });
-  assert.equal(summary.cache_target.below_requests.find(r => r.cached_tokens === 89_995).input_tokens, 100_000);
+  assert.equal(summary.cache_target.below_requests.find(r => r.cached_tokens === 94_995).input_tokens, 100_000);
   for (const trace of [missingTarget, failedTarget, mismatchTarget, noResponseTarget,
     zeroInputTarget, httpErrorTarget]) {
     assert.equal(summary.records.find(r => r.trace_id === trace.trace_id)?.cache_target_status,
@@ -267,7 +267,7 @@ try {
   assert.equal(truncatedSummary.cache_target.met, 1);
   assert.equal(truncatedSummary.cache_target.status, 'unverified', 'a partial diagnostic window cannot pass');
 
-  console.log('cache diagnostics: prefix comparison, raw usage, redaction and honest 90% target PASS');
+  console.log('cache diagnostics: prefix comparison, raw usage, redaction and honest 95% target PASS');
 } finally {
   const resolved = path.resolve(appDir);
   assert.equal(path.dirname(resolved), path.resolve(os.tmpdir()));

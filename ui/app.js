@@ -365,15 +365,16 @@ function scrollBottom() { const c = $('#chatStream'); c.scrollTop = c.scrollHeig
 
 // 折叠式步骤时间线（v2.6）：连续的工具卡收进一个 <details>，summary 显示步数与耗时。
 // 失败步骤在 summary 上标红计数——折叠是默认态，不能把错误一起埋掉。
-function stepGroup(container) {
+function stepGroup(container, expand) {
   let d = container.querySelector(':scope > details.steps');
   if (!d) {
     d = document.createElement('details');
     d.className = 'steps';
+    d.open = !!expand;
     d.dataset.t0 = String(Date.now());
     d.innerHTML = '<summary class="steps-sum"></summary><div class="steps-body"></div>';
     container.appendChild(d);
-  }
+  } else if (expand) d.open = true;
   return d;
 }
 function updateStepSummary(d) {
@@ -390,19 +391,28 @@ function lastStepGroup() {
   return groups.length ? groups[groups.length - 1] : null;
 }
 
-function renderToolCard(container, name, argsPrev, ok, resultPrev, ms, callId) {
+function renderToolCard(container, name, argsPrev, ok, resultPrev, ms, callId, argsFull, expand) {
   const el = document.createElement('div');
   el.className = 'toolcard';
   if (callId) el.dataset.callid = callId;
   // 三态：ok=null=运行中(⏳)，true=✓，false=✗（此前 ok=null 被 falsy 渲染成 ✗ ——运行中误显失败）
   const status = ok == null ? '<span class="run">⏳</span>' : `<span class="${ok ? 'ok' : 'bad'}">${ok ? '✓' : '✗'}</span>`;
-  el.innerHTML = `<div class="head"><span class="tname">🛠 ${esc(name)}</span><span class="tprev">${esc(argsPrev || '')}</span>${status}<span class="tms">${ms != null ? ms + 'ms' : ''}</span></div><div class="tbody" style="display:none">${esc(resultPrev || '')}</div>`;
+  el.innerHTML = `<div class="head"><span class="tname">🛠 ${esc(name)}</span><span class="tprev">${esc(argsPrev || '')}</span>${status}<span class="tms">${ms != null ? ms + 'ms' : ''}</span></div>`
+    + '<div class="tbody" style="display:none">'
+    + '<div class="tsec"><div class="tlabel">参数</div><pre class="targs"></pre></div>'
+    + '<div class="tsec"><div class="tlabel">结果</div><pre class="tresult"></pre></div></div>';
+  el.querySelector('.targs').textContent = prettyArgs(argsFull || argsPrev || '');
+  el.querySelector('.tresult').textContent = resultPrev || '';
   el.querySelector('.head').onclick = () => { el.classList.toggle('open'); const b = el.querySelector('.tbody'); b.style.display = b.style.display === 'none' ? 'block' : 'none'; };
-  const g = stepGroup(container);
+  const g = stepGroup(container, expand);
   g.querySelector('.steps-body').appendChild(el);
   updateStepSummary(g);
   scrollBottom();
   return el;
+}
+function prettyArgs(text) {
+  const raw = String(text || '');
+  try { return JSON.stringify(JSON.parse(raw), null, 2); } catch { return raw; }
 }
 // 状态条：让长任务期间界面不"啥都没有"——当前动作 + 步骤计数 + 已耗时
 function setWork(text, meta) {
@@ -429,7 +439,22 @@ function renderHistory(s) {
     } else if (m.role === 'assistant') {
       const el = addMsgEl('assistant');
       const body = el.querySelector('.body');
-      if (m.content) body.innerHTML = renderMD(m.content);
+      if (m.reasoning_content) {
+        const rb = document.createElement('details');
+        rb.className = 'reasonbox';
+        rb.innerHTML = `<summary>🧠 思考过程 <span class="rchars">${m.reasoning_content.length} 字</span></summary>`;
+        const pre = document.createElement('div');
+        pre.className = 'reasoning';
+        pre.textContent = m.reasoning_content;
+        rb.appendChild(pre);
+        body.appendChild(rb);
+      }
+      if (m.content) {
+        const text = document.createElement('div');
+        text.className = 'msgtext';
+        text.innerHTML = renderMD(m.content);
+        body.appendChild(text);
+      }
       if (m.tool_calls) {
         for (const tc of m.tool_calls) {
           // 找配对的 tool 结果
@@ -439,17 +464,20 @@ function renderHistory(s) {
           }
           let argsPrev = '';
           try { const a = JSON.parse(tc.function.arguments); argsPrev = Object.values(a).map(v => String(typeof v === 'string' ? v : JSON.stringify(v)).slice(0, 60)).join(' · '); } catch { argsPrev = tc.function.arguments.slice(0, 60); }
-          renderToolCard(body, tc.function.name, argsPrev, ok, result, null);
+          renderToolCard(body, tc.function.name, argsPrev, ok, result, null, tc.id, tc.function.arguments);
           lastGroup = body.querySelector(':scope > details.steps');
         }
       }
-      if (!m.content && !m.tool_calls) body.innerHTML = '<span class="mini">(空回复)</span>';
+      if (!m.content && !m.tool_calls && !m.reasoning_content) body.innerHTML = '<span class="mini">(空回复)</span>';
     }
   }
-  if (lastGroup) updateStepSummary(lastGroup);
+  // 历史重放默认折叠步骤，但完整参数/结果/思考都保留在展开项里；实时过程默认展开。
+  for (const d of cs.querySelectorAll('details.steps')) d.open = false;
+  if (lastGroup) { lastGroup.open = true; updateStepSummary(lastGroup); }
   renderTodos(s.todos);
   renderMemory(s.memory);
   updateCost(s.usage);
+  renderPromptStats();
   if (s.pendingQuestion) showQuestion(s.pendingQuestion.question, s.pendingQuestion.options, s.pendingQuestion);
   else if (s.wait_reason?.kind === 'decision_text') showQuestion(s.wait_reason.question, []);
 }
@@ -481,6 +509,49 @@ function updateCost(u) {
   if ($('#cacheDiagnostics').open && $('#cacheDiagnostics').dataset.sessionId !== state.session?.id) refreshCacheDiagnostics();
 }
 let cacheDiagnosticSeq = 0;
+// 本会话最近 30 次请求的 token 来源（本地估算）。同一轮 record/finish 两次事件按 at 合并。
+function upsertPromptStats(stats) {
+  if (!stats) return;
+  if (state.session) {
+    if (!Array.isArray(state.session.prompt_stats)) state.session.prompt_stats = [];
+    const rows = state.session.prompt_stats;
+    const at = stats.at || Date.now();
+    const row = {
+      at, iter: stats.iter, total_tokens: stats.total_tokens,
+      components: stats.components || [],
+      prompt_tokens: stats.prompt_tokens == null ? null : stats.prompt_tokens,
+      cache_hit_tokens: stats.cache_hit_tokens == null ? null : stats.cache_hit_tokens,
+      cache_rate: stats.cache_rate == null ? null : stats.cache_rate,
+    };
+    const idx = rows.findIndex(r => r.at === at);
+    if (idx >= 0) rows[idx] = row; else rows.push(row);
+    if (rows.length > 30) rows.splice(0, rows.length - 30);
+  }
+  renderPromptStats();
+}
+function renderPromptStats() {
+  const body = document.querySelector('#promptStatsBody');
+  if (!body) return;
+  const rows = state.session?.prompt_stats || [];
+  if (!rows.length) { body.textContent = '尚无请求记录。'; return; }
+  const last = rows[rows.length - 1];
+  body.replaceChildren();
+  const p = (text, cls = '') => { const el = document.createElement('p'); el.textContent = text; if (cls) el.className = cls; body.appendChild(el); };
+  const sum = new Map();
+  for (const row of rows) for (const c of row.components || []) {
+    const cur = sum.get(c.key) || { key: c.key, tokens: 0 };
+    cur.tokens += c.tokens; sum.set(c.key, cur);
+  }
+  const labels = { system: '系统提示', tools: '工具定义', user: '用户消息', assistant: '助手回复', reasoning: '思考内容', tool_calls: '工具参数', tool_results: '工具结果', dynamic: '本轮动态规则' };
+  const total = [...sum.values()].reduce((n, r) => n + r.tokens, 0);
+  p(`最近 ${rows.length} 次请求累计估算 ${fmtK(total)} token（本地估算，账单以通道 usage 为准）`);
+  for (const r of [...sum.values()].sort((a, b) => b.tokens - a.tokens)) {
+    p(`${labels[r.key] || r.key}：${fmtK(r.tokens)} token · ${total ? (100 * r.tokens / total).toFixed(1) : 0}%`);
+  }
+  const cacheText = last.cache_rate == null ? '缓存未上报' : `缓存 ${(100 * last.cache_rate).toFixed(1)}%`;
+  p(`最近一次：估算 ${fmtK(last.total_tokens)} token · 实际输入 ${last.prompt_tokens == null ? '未上报' : fmtK(last.prompt_tokens)} · ${cacheText}`);
+  p('上下文每轮完整重发；工具结果与思考内容留在历史里会反复计费，稳定前缀才可能命中服务端缓存。');
+}
 function cachePrefixDescription(row) {
   const c = row.comparison || {};
   const names = { first: '本轮首个样本', unchanged: '输入内容保持一致', append: '历史仅在末尾追加', rewrite: '请求消息发生变化（可能含临时状态）', shorter: '请求消息缩短', structure_change: '系统提示、工具或设置变化', route_change: '模型或通道已切换', skipped_large_request: '请求较大，本次未比较前缀' };
@@ -524,7 +595,7 @@ async function refreshCacheDiagnostics() {
       + target.below + '次，无法核验' + target.unverified + '次；' + verdict + '（仅限最近'
       + (report.window_days || 7) + '天已采集记录）。');
     for (const low of target.below_requests || []) {
-      line('低于90% · 请求#' + low.request_seq + ' · ' + low.model + ' · 缓存'
+      line('低于' + target.threshold_percent + '% · 请求#' + low.request_seq + ' · ' + low.model + ' · 缓存'
         + low.cached_tokens + '/' + low.input_tokens + ' token（'
         + (100 * low.cached_tokens / low.input_tokens).toFixed(3) + '%）');
     }
@@ -534,8 +605,8 @@ async function refreshCacheDiagnostics() {
     const lane = row.lane?.startsWith('sub:') ? '子任务' : row.lane === 'summarize' ? '历史压缩' : row.lane === 'main:local' ? '临时任务' : '主流程';
     const cache = row.usage?.raw_cache || {};
     const cacheText = cache.state === 'missing' ? '通道未返回缓存字段' : cache.state === 'invalid' || cache.state === 'conflicting' ? '缓存计量需核对' : '缓存读取' + fmtK(cache.tokens) + ' token';
-    const targetText = row.cache_target_status === 'met' ? ' · 达到90%'
-      : row.cache_target_status === 'below' ? ' · 低于90%' : row.cache_target_status === 'unverified' ? ' · 90%目标无法核验' : '';
+    const targetText = row.cache_target_status === 'met' ? ' · 达到95%'
+      : row.cache_target_status === 'below' ? ' · 低于95%' : row.cache_target_status === 'unverified' ? ' · 95%目标无法核验' : '';
     line(lane + ' · ' + row.model + ' · ' + cacheText + targetText
       + (row.outcome === 'error' ? ' · 请求未完成' : ''), 'cache-diagnostic-entry');
     line(cachePrefixDescription(row));
@@ -714,28 +785,41 @@ function handleEvent(ev, st) {
       break;
     case 'delta': {
       if (!st.cur) { st.cur = addMsgEl('assistant', '羲和 <span class="mini">输出中…</span>'); st.body = st.cur.querySelector('.body'); st.body.innerHTML = ''; }
-      st.body.innerHTML = renderMD(st.body.dataset.raw = (st.body.dataset.raw || '') + ev.s);
+      if (!st.text) { st.text = document.createElement('div'); st.text.className = 'msgtext'; st.body.appendChild(st.text); }
+      st.text.innerHTML = renderMD(st.text.dataset.raw = (st.text.dataset.raw || '') + ev.s);
       scrollBottom();
       break;
     }
     case 'rdelta': {
       if (!st.cur) { st.cur = addMsgEl('assistant', '羲和 <span class="mini">思考中…</span>'); st.body = st.cur.querySelector('.body'); }
-      if (!st.reason) { st.reason = document.createElement('div'); st.reason.className = 'reasoning'; st.body.appendChild(st.reason); }
-      st.reason.textContent = (st.reason.textContent + ev.s).slice(-2000);
-      st.reason.scrollTop = st.reason.scrollHeight;
-      scrollBottom();
+      if (!st.reason) {
+        st.reasonBox = document.createElement('details');
+        st.reasonBox.className = 'reasonbox';
+        st.reasonBox.open = true;
+        st.reasonBox.innerHTML = '<summary>🧠 思考过程 <span class="rchars">0 字</span></summary><div class="reasoning"></div>';
+        if (st.text) st.body.insertBefore(st.reasonBox, st.text); else st.body.appendChild(st.reasonBox);
+        st.reason = st.reasonBox.querySelector('.reasoning');
+      }
+      st.reason.textContent += ev.s;
+      st.reasonBox.querySelector('.rchars').textContent = st.reason.textContent.length + ' 字';
+      const c = $('#chatStream');
+      if (c.scrollHeight - c.scrollTop - c.clientHeight < 160) scrollBottom();
       break;
     }
     case 'assistant_msg': {
-      if (st.cur && st.body) { delete st.body.dataset.raw; st.body.innerHTML = renderMD(ev.content); }
+      if (st.cur && st.body) {
+        if (st.text) st.text.innerHTML = renderMD(ev.content);
+        else { st.text = document.createElement('div'); st.text.className = 'msgtext'; st.text.innerHTML = renderMD(ev.content); st.body.appendChild(st.text); }
+        if (st.text.dataset) delete st.text.dataset.raw;
+      }
       else { const el = addMsgEl('assistant'); el.querySelector('.body').innerHTML = renderMD(ev.content); }
       st.close();
       break;
     }
     case 'tool_start': {
-      if (st.cur) { if (st.body && st.body.dataset.raw) { st.body.innerHTML = renderMD(st.body.dataset.raw); delete st.body.dataset.raw; } st.close(); }
+      if (st.cur) { if (st.text && st.text.dataset.raw) { st.text.innerHTML = renderMD(st.text.dataset.raw); delete st.text.dataset.raw; } st.close(); }
       const anchor = lastAssistantBody();
-      renderToolCard(anchor, ev.name, ev.args_preview, null, '运行中…', null, ev.id);
+      renderToolCard(anchor, ev.name, ev.args_preview, null, '运行中…', null, ev.id, ev.args_full, true);
       state.stepCount = (state.stepCount || 0) + 1;
       setWork('正在执行：' + ev.name, `${state.stepCount} 步 · ` + (ev.args_preview || '').slice(0, 80));
       break;
@@ -755,13 +839,21 @@ function handleEvent(ev, st) {
         const run = card.querySelector('.run'); if (run) run.remove();
         const sEl = document.createElement('span'); sEl.className = ev.ok ? 'ok' : 'bad'; sEl.textContent = ev.ok ? '✓' : '✗';
         card.querySelector('.head').insertBefore(sEl, card.querySelector('.tms'));
-        card.querySelector('.tbody').textContent = ev.result_preview;
+        const resultEl = card.querySelector('.tresult') || card.querySelector('.tbody');
+        resultEl.textContent = ev.result_full != null ? ev.result_full : ev.result_preview;
+        if (ev.result_len != null && ev.result_full != null && ev.result_len > ev.result_full.length) {
+          const more = document.createElement('div');
+          more.className = 'mini';
+          more.textContent = `（结果共 ${ev.result_len} 字符，界面显示前 ${ev.result_full.length} 字符；完整内容在会话历史与工具返回中）`;
+          resultEl.after(more);
+        }
       }
       updateStepSummary(card ? card.closest('details.steps') : null);
       setWork(ev.ok ? '完成一步，继续…' : '一步失败，看折叠块里的红标', `${state.stepCount || 0} 步`);
       break;
     }
     case 'usage': updateCost(ev.usage); break;
+    case 'prompt_stats': upsertPromptStats(ev.stats); break;
     case 'todo': renderTodos(ev.todos); break;
     case 'memory': renderMemory(ev.memory); break;
     case 'question': showQuestion(ev.question, ev.options, ev); break;

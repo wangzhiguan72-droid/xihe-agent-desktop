@@ -360,20 +360,39 @@ async function chatStreamAnthropic({ base, key, model, messages, system, tools, 
   applyReasoningBody(body, reasoningBody);
   // 新Claude默认也是adaptive；未显式设置档位时同样不能带采样温度。
   if (/^claude-(?:fable-5-1|opus-5-5|sonnet-5-5|opus-4-6|sonnet-4-6)(?:-|$)/i.test(model)) delete body.temperature;
+  // Anthropic 提示缓存必须显式打断点：system+工具是稳定前缀，放两个 ephemeral 断点；
+  // 稳定历史末尾的第三个断点由 agent.js 的 markAnthropicCache 打。只对 claude 模型启用，
+  // 避免不认识 cache_control 的 anthropic 兼容中转站直接 400。
+  const cacheable = /^claude/i.test(model);
+  if (cacheable) {
+    if (system) body.system = [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }];
+    if (tools && tools.length) {
+      body.tools = tools.slice();
+      body.tools[body.tools.length - 1] = { ...body.tools[body.tools.length - 1], cache_control: { type: 'ephemeral' } };
+    }
+  }
 
   const url = endpointURL(base, 'anthropic');
-  const serializedBody = JSON.stringify(body);
+  const headers = {
+    'Content-Type': 'application/json',
+    'x-api-key': key,
+    'anthropic-version': '2023-06-01',
+  };
+  let serializedBody = JSON.stringify(body);
   transportTrace?.request('anthropic', url, body, serializedBody);
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': key,
-      'anthropic-version': '2023-06-01',
-    },
-    body: serializedBody,
-    signal,
-  });
+  let res = await fetch(url, { method: 'POST', headers, body: serializedBody, signal });
+  if (cacheable && res.status === 400) {
+    const text = await res.text().catch(() => '');
+    if (/cache_control/i.test(text)) {
+      body.system = system;
+      for (const tool of body.tools || []) delete tool.cache_control;
+      serializedBody = JSON.stringify(body);
+      transportTrace?.request('anthropic', url, body, serializedBody);
+      res = await fetch(url, { method: 'POST', headers, body: serializedBody, signal });
+    } else {
+      res = new Response(text, { status: 400, statusText: res.statusText, headers: res.headers });
+    }
+  }
   transportTrace?.response(res);
   if (!res.ok) {
     const t = await res.text().catch(() => '');

@@ -1027,6 +1027,41 @@ function lookupIds(js) {
     return r.summary.replace(/\s+/g, ' ').trim();
   });
 
+  await check('思考与工具过程完整展示：不截断、参数/结果可展开、Token来源面板', async () => {
+    const r = await client.evaluate(`(() => {
+      const cs = document.querySelector('#chatStream');
+      cs.innerHTML = '';
+      const host = document.createElement('div');
+      cs.appendChild(host);
+      const st = { body: host };
+      handleEvent({ t: 'rdelta', s: '思'.repeat(12000) }, st);
+      const reason = cs.querySelector('.reasoning');
+      const reasonOpen = cs.querySelector('.reasonbox')?.open;
+      const chars = cs.querySelector('.rchars')?.textContent;
+      const longArgs = JSON.stringify({ path: 'a.txt', content: 'y'.repeat(5000) });
+      renderToolCard(host, 'fs_write', 'a.txt', true, 'ok', 5, 'c1', longArgs, true);
+      const card = host.querySelector('.toolcard');
+      const argsShown = card.querySelector('.targs').textContent.length;
+      const stepsOpen = host.querySelector('details.steps')?.open;
+      const old = state.session;
+      state.session = { id: 'prompt-stats-test', prompt_stats: [] };
+      upsertPromptStats({ at: 123, iter: 1, total_tokens: 1000, components: [
+        { key: 'system', tokens: 600 }, { key: 'tool_results', tokens: 400 } ],
+        prompt_tokens: 1100, cache_hit_tokens: 1000, cache_rate: 0.909 });
+      const panel = document.querySelector('#promptStatsBody').textContent;
+      state.session = old;
+      return { reasonLen: reason?.textContent.length, reasonOpen, chars, argsShown, stepsOpen, panel };
+    })()`);
+    assert(r.reasonLen === 12000, '思考过程被截断：' + r.reasonLen);
+    assert(r.reasonOpen === true, '实时思考过程应默认展开');
+    assert(r.chars === '12000 字', '思考字数未如实显示');
+    assert(r.argsShown > 5000, '工具参数被截断：' + r.argsShown);
+    assert(r.stepsOpen === true, '实时工具步骤应默认展开');
+    assert(/系统提示：600 token · 60\.0%/.test(r.panel) && /工具结果：400 token · 40\.0%/.test(r.panel), 'Token来源占比不对：' + r.panel);
+    assert(/缓存 90\.9%/.test(r.panel), '实际缓存率未显示：' + r.panel);
+    return r.chars + ' · 参数' + r.argsShown + '字符';
+  });
+
   await check('用量卡 updateCost：输入/输出/调用/缓存命中/识图（不显示费用）', async () => {
     const r = await client.evaluate(`(() => {
       updateCost({ cost: 1.2345, prompt_tokens: 20000, completion_tokens: 3000, calls: 7, cache_hit_tokens: 5000, vision_calls: 2 });
@@ -1584,8 +1619,8 @@ function lookupIds(js) {
         if (empty.session_id !== id || empty.available !== false) throw new Error('空诊断接口状态不对');
         api = async (url, ...args) => url.startsWith('/api/session/cache-diagnostics') ? {
           available: true, requests: 3, unknown_count: 1, cache_missing: 1, known_rate: 50,
-          cache_target: { threshold_percent: 90, status: 'below', met: 1, below: 1, unverified: 1,
-            below_requests: [{ request_seq: 2, model: 'gpt-ui', input_tokens: 100000, cached_tokens: 89995 }] },
+          cache_target: { threshold_percent: 95, status: 'below', met: 1, below: 1, unverified: 1,
+            below_requests: [{ request_seq: 2, model: 'gpt-ui', input_tokens: 100000, cached_tokens: 94995 }] },
           historical_models: [{ model: 'gpt-ui', calls: 3, rate: 33.3 }],
           records: [
             { model: 'gpt-ui', lane: 'main', outcome: 'complete', cache_target_status: 'unverified', usage: { raw_cache: { state: 'missing' } }, comparison: { kind: 'append' } },
@@ -1614,8 +1649,8 @@ function lookupIds(js) {
     assert(/缓存上报占比/.test(hitLabel), '旧总览不能把未返回字段混成已确认的真实命中率');
     assert(/通道未返回缓存字段/.test(result.text) && /缓存读取0 token/.test(result.text), '未上报被混成0命中：'+result.text);
     assert(/无法计算占比1次，其中缓存字段未返回1次/.test(result.text), '缺失字段数量与无法计量数量口径混淆');
-    assert(/逐请求缓存目标≥90%：达标1次，低于目标1次，无法核验1次/.test(result.text), '逐请求目标未如实显示');
-    assert(/低于90% · 请求#2/.test(result.text) && /89\.995%/.test(result.text), '不能把89.995%四舍五入成达标');
+    assert(/逐请求缓存目标≥95%：达标1次，低于目标1次，无法核验1次/.test(result.text), '逐请求目标未如实显示');
+    assert(/低于95% · 请求#2/.test(result.text) && /94\.995%/.test(result.text), '不能把94.995%四舍五入成达标');
     assert(/历史仅在末尾追加/.test(result.text) && /第2条消息/.test(result.text), '前缀变化解释缺失');
     assert(/请求消息发生变化（可能含临时状态）/.test(result.text), '实际出站尾部变化不能直接认定持久历史被改写');
     assert(/系统提示、工具或设置变化；变化：工具列表/.test(result.text), '工具变化被误称历史改写');

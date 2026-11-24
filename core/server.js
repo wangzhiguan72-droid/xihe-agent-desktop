@@ -619,6 +619,7 @@ function publicSession(s) {
     unverifiedNumeric: !!s.unverifiedNumeric, compute_runs: s.compute_runs || 0,
     decisions: s.decisions || [], runs: s.runs || [],
     resolved_reasoning: s.resolved_reasoning || null, reasoning_history: (s.reasoning_history || []).slice(-30),
+    prompt_stats: (s.prompt_stats || []).slice(-30),
     formulas: s.formulas || [], data_epoch: s.data_epoch || 0,
     skill_loaded: s.skill_loaded || null,
     skill_override: s.skill_override || null,

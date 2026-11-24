@@ -22,6 +22,7 @@ const { specGate, specSummary, specBinding } = require('./model_spec');
 const { materialPolicyBlock, wrapMaterial, MATERIAL_POLICY_VERSION } = require('./material_policy');
 const { resolveReasoning, callWithReasoning, reasoningRecorder, REASONING_POLICY_VERSION } = require('./reasoning');
 const { judgeDecision, shouldAutoJudge, shouldOverride: shouldOverrideDecisionJudge, disposition: decisionJudgeDisposition } = require('./decision_judge');
+const promptDiagnostics = require('./prompt_diagnostics');
 
 const isLocalTask = session => session?.task_focus?.kind === 'local';
 const isReviewTask = session => session?.task_scope === 'review' && !isLocalTask(session);
@@ -1107,6 +1108,26 @@ function buildRequestMessages(system, msgs) {
 
 // Anthropic 协议消息组装：system 提到顶层；tool 结果必须作为紧跟的 user 消息 tool_result 块回传；
 // assistant 消息优先回放原始 anthropic_blocks（thinking 签名+tool_use 必须逐字保留），否则从 tool_calls 重建
+// Anthropic 的自动缓存只覆盖到最后一个 cache_control 断点。给稳定历史末尾
+// 打一个 ephemeral 断点，临时状态块（state/mode/phase/recall）留在断点之后。
+function markAnthropicCache(messages, index) {
+  const msg = messages[index];
+  if (!msg) return;
+  if (typeof msg.content === 'string') {
+    msg.content = [{ type: 'text', text: msg.content, cache_control: { type: 'ephemeral' } }];
+    return;
+  }
+  if (!Array.isArray(msg.content)) return;
+  // thinking/redacted_thinking 块不接受 cache_control；从尾部找最后一个可缓存块。
+  const cacheable = new Set(['text', 'image', 'tool_use', 'tool_result', 'document']);
+  for (let i = msg.content.length - 1; i >= 0; i--) {
+    const block = msg.content[i];
+    if (!block || typeof block !== 'object' || !cacheable.has(block.type)) continue;
+    if (!block.cache_control) block.cache_control = { type: 'ephemeral' };
+    return;
+  }
+}
+
 function buildAnthropicMessages(msgs) {
   const out = [];
   const flushToolResults = (acc) => {
@@ -1444,6 +1465,10 @@ async function runTurn(session, deps, userInput) {
       const messages = isAnthropic
         ? buildAnthropicMessages(history)
         : buildRequestMessages(session.system, history);
+      // 稳定历史到此为止；后面追加的块每轮会变。Anthropic 需要显式断点，
+      // 断点放在稳定历史末尾，避免把临时状态写进缓存前缀。
+      const stableMessageCount = messages.length;
+      const dynamicBlocks = [];
       // 契约完整注入每轮请求：math 模式下，作为最后一条 user 消息附加（不动 system 前缀，
       // 不破坏缓存命中；多轮追加 user 消息符合 OpenAI/Anthropic 协议交替规则）。
       // 关键题设不能依赖压缩摘要——审计复现：长对话中部关键边界条件在压缩时丢失，
@@ -1451,12 +1476,8 @@ async function runTurn(session, deps, userInput) {
       if (!isLocalTask(session) && session.mode === 'math' && (session.contract || []).length) {
         const block = stateBlock(session, appDir);
         if (block) {
+          dynamicBlocks.push(block);
           messages.push({ role: 'user', content: block });
-          if (isAnthropic) {
-            // Anthropic 的合并逻辑会把连续 user 合并——这里只有单条 user 不冲突
-            const last = messages[messages.length - 1];
-            if (last && last.role === 'user') { /* ok */ }
-          }
         }
       }
       // 自动复盘提示（v2.5）：上一轮踩了坑（工具反复失败/熔断/打转停轮）→ 本轮开头强制表态。
@@ -1469,20 +1490,31 @@ async function runTurn(session, deps, userInput) {
           + (fails ? `\n工具失败明细：\n${fails}` : '')
           + `\n请用 lesson_record(situation=这次的场景, rule=下次该怎么做) 记 1-2 条**可复用的**教训（situation 里带工具名/方法名，召回才准）；`
           + `若判断这是环境抖动或一次性失误、不值得沉淀，用一句话说明原因即可跳过。不要把这个提示原文抄进经验库。` });
+        dynamicBlocks.push(messages[messages.length - 1].content);
         emitSafe({ t: 'warn', msg: '自动复盘：上一轮有失败信号，已提示沉淀教训' });
       }
-      if (session.mode === 'math') messages.push({ role: 'user', content: modeBlock(session) });
+      if (session.mode === 'math') {
+        const block = modeBlock(session);
+        dynamicBlocks.push(block);
+        messages.push({ role: 'user', content: block });
+      }
       // 阶段规则块（X-0 / I-1）：参考规则浓缩后按阶段注入——交接清单根因是
       // my-cumcm-deepseek 的 7 份 references 从未进入上下文（系统提示只注入了 SKILL.md 主文）。
       // 走最后一条 user 消息（与 stateBlock/modeBlock 同层），不动 system 前缀。
       {
         const pb = isLocalTask(session) ? '' : spiral.phaseBlock(session, Date.now(), appDir);
-        if (pb) messages.push({ role: 'user', content: pb });
+        if (pb) { dynamicBlocks.push(pb); messages.push({ role: 'user', content: pb }); }
       }
       // 经验召回块同样走最后 user 消息注入（与状态块同层：可访问、不占 system 前缀）
       if (ctx._recallBlock) {
+        dynamicBlocks.push(ctx._recallBlock);
         messages.push({ role: 'user', content: ctx._recallBlock });
       }
+      if (isAnthropic && /^claude/i.test(apiModel)) markAnthropicCache(messages, stableMessageCount - 1);
+      const promptStats = promptDiagnostics.record(session, promptDiagnostics.analyzePrompt({
+        system: session.system, messages: history, tools, dynamic: dynamicBlocks, iter,
+      }));
+      emitSafe({ t: 'prompt_stats', stats: promptStats });
       // temperature 三级：提供商锁温（如 kimi-k3 思考模式强制 1.0）> temperature 400 后本会话不传 > 用户设置
       const callExtra = {
         temperature: provider.temperatureLock != null ? provider.temperatureLock
@@ -1538,6 +1570,8 @@ async function runTurn(session, deps, userInput) {
       if (res.usage) {
         lastPromptTokens = res.usage.prompt_tokens;
         spend(apiModel, res.usage, 'main');
+        promptDiagnostics.finish(session, promptStats, res.usage);
+        emitSafe({ t: 'prompt_stats', stats: promptStats });
         emitSafe({ t: 'usage', usage: session.usage, last: res.usage });
       }
 
@@ -1670,7 +1704,10 @@ async function runTurn(session, deps, userInput) {
         }
         let name = tc.function.name, args;
         const t0 = Date.now();
-        emitSafe({ t: 'tool_start', id: tc.id, name, args_preview: cap(tc.function.arguments, 300) });
+        emitSafe({ t: 'tool_start', id: tc.id, name,
+          args_preview: cap(tc.function.arguments, 300),
+          args_full: cap(String(tc.function.arguments || ''), 12000),
+          args_len: String(tc.function.arguments || '').length });
         if (isLocalTask(session) && LOCAL_BLOCKED_TOOLS.has(name)) {
           const content = `[系统·临时任务] ${name} 属于暂停的主线流程，本次未执行。请只完成当前局部请求。`;
           session.messages.push({ role: 'tool', tool_call_id: tc.id, content });
@@ -1839,7 +1876,10 @@ async function runTurn(session, deps, userInput) {
           }
         }
         session.messages.push({ role: 'tool', tool_call_id: tc.id, content: cap(content) });
-        emitSafe({ t: 'tool_end', id: tc.id, name, ok: r.ok, ms: Date.now() - t0, result_preview: cap(String(content).replace(/\s+/g, ' '), 400) });
+        const resultText = String(content);
+        emitSafe({ t: 'tool_end', id: tc.id, name, ok: r.ok, ms: Date.now() - t0,
+          result_preview: cap(resultText.replace(/\s+/g, ' '), 400),
+          result_full: cap(resultText, 24000), result_len: resultText.length });
         // 输入版本与运行记录（证据链 v2.3）：
         // 计算工具——比对执行前后快照，检测「运行中修改已存在输入」（unstable 运行不作证据）；
         // 再刷新 epoch（成败都刷，覆盖"写后报错"路径）并记账。文件工具——成败都刷（写已发生）。
