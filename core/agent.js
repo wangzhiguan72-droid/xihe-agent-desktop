@@ -1106,6 +1106,18 @@ function buildRequestMessages(system, msgs) {
   return out;
 }
 
+// 前缀指纹只用于归因，不参与请求内容：提示缓存只认逐字相同的前缀，
+// 提供商/模型/系统提示/工具集任一变化都会让后续请求变成冷启动。
+function sha256Hex(text) {
+  return crypto.createHash('sha256').update(String(text == null ? '' : text), 'utf8').digest('hex');
+}
+function cachePrefixPrint(providerKey, apiModel, system, tools) {
+  const systemHash = sha256Hex(system || '');
+  const toolsHash = sha256Hex(JSON.stringify(tools || []));
+  return { hash: sha256Hex([providerKey, apiModel, systemHash, toolsHash].join('\n')),
+    provider: providerKey, model: apiModel, system_hash: systemHash, tools_hash: toolsHash, at: Date.now() };
+}
+
 // Anthropic 协议消息组装：system 提到顶层；tool 结果必须作为紧跟的 user 消息 tool_result 块回传；
 // assistant 消息优先回放原始 anthropic_blocks（thinking 签名+tool_use 必须逐字保留），否则从 tool_calls 重建
 // Anthropic 的自动缓存只覆盖到最后一个 cache_control 断点。给稳定历史末尾
@@ -1376,6 +1388,28 @@ async function runTurn(session, deps, userInput) {
   const isAnthropic = provider.kind === 'anthropic';
   const tools = (isAnthropic ? toAnthropicTools(session, settings) : toOpenAITools(session, settings))
     .filter(t => !isLocalTask(session) || !LOCAL_BLOCKED_TOOLS.has(isAnthropic ? t.name : t.function.name));
+  // 缓存前缀锁：轮开始记录实际发出的前缀指纹。变化时只如实报告冷启动归因，
+  // 不自动换模型、不改上下文来掩盖——缓存命中率和推理质量必须同时成立。
+  const prefix = cachePrefixPrint(providerKey, apiModel, session.system, tools);
+  const prevPrefix = session.cache_prefix;
+  if (prevPrefix && prevPrefix.hash !== prefix.hash) {
+    const changed = [
+      prevPrefix.provider !== prefix.provider ? '提供商' : '',
+      prevPrefix.model !== prefix.model ? '模型' : '',
+      prevPrefix.system_hash !== prefix.system_hash ? '系统提示' : '',
+      prevPrefix.tools_hash !== prefix.tools_hash ? '工具集' : '',
+    ].filter(Boolean);
+    let reason = changed.join('+') || '前缀内容变化';
+    const dg = session.effort_downgrade;
+    if (changed.length === 1 && changed[0] === '系统提示' && dg && Date.now() - dg.at < 10 * 60 * 1000) {
+      reason = `系统提示（预算降档 ${dg.from}→${dg.to}）`;
+    }
+    session.cache_reset = { at: Date.now(), kind: 'prefix', reason,
+      from: prevPrefix.provider + ':' + prevPrefix.model, to: prefix.provider + ':' + prefix.model };
+    emitSafe({ t: 'cache_reset', kind: 'prefix', reason,
+      from: session.cache_reset.from, to: session.cache_reset.to });
+  }
+  session.cache_prefix = prefix;
   const spend = makeSpend(session, deps);
   const ctx = {
     sandbox, appDir, workspace: sandbox.root, session, settings, ledger,
@@ -1420,6 +1454,10 @@ async function runTurn(session, deps, userInput) {
   const maxOut = settings.max_output_tokens === 0 ? null
     : (settings.max_output_tokens != null ? settings.max_output_tokens : (provider.defaultMaxTokens || 32768));
   let lastPromptTokens = 0;
+  // 压缩会改写历史 → 下一次请求必然冷启动。阈值随窗口和输出上限联动：
+  // 只有窗口确实留得下输出时才放宽到 0.85，避免压缩过早白丢缓存或过晚触发超限。
+  const compactAt = maxOut == null ? 0.72
+    : Math.max(0.72, Math.min(0.85, (ctxLimit - maxOut - 4096) / ctxLimit));
   let consecutiveSame = 0, lastSig = '';
   let tempOk = true;
   let truncFails = 0, compactWarned = false;
@@ -1452,7 +1490,7 @@ async function runTurn(session, deps, userInput) {
 
       // 上下文自动压缩（保前缀缓存尽量晚触发）。压无可压时只警告一次（不熔断），
       // 真正超限的报错路径见 catch 里的 context-length 分支。
-      if (!isLocalTask(session) && lastPromptTokens > ctxLimit * 0.72) {
+      if (!isLocalTask(session) && lastPromptTokens > ctxLimit * compactAt) {
         emitSafe({ t: 'compact', msg: '上下文接近上限，压缩历史…' });
         const ok = await compactHistory(session, deps, model, apiKey, provider, spend, providerKey);
         if (!ok && !compactWarned) {
@@ -2354,6 +2392,8 @@ async function compactHistory(session, deps, model, apiKey, provider, spend, pro
     session.messages = [head, { role: 'user', content: summary
       + `\n【原始历史归档】${archive.path}\n${archive.sha256}（仅活动窗口压缩，原文可追溯）` }, ...tail];
     deps.emit({ t: 'compact_done', kept: session.messages.length });
+    deps.emit({ t: 'cache_reset', kind: 'compact', reason: '历史压缩',
+      detail: `${before} 条 → ${session.messages.length} 条，原文已归档` });
     // 进度校验：确实减少了消息才叫成功（没减少却返回 true = 调用方会原样重试超限请求）
     return session.messages.length < before;
   } catch (e) {

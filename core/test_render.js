@@ -1621,6 +1621,16 @@ function lookupIds(js) {
           available: true, requests: 3, unknown_count: 1, cache_missing: 1, known_rate: 50,
           cache_target: { threshold_percent: 95, status: 'below', met: 1, below: 1, unverified: 1,
             below_requests: [{ request_seq: 2, model: 'gpt-ui', input_tokens: 100000, cached_tokens: 94995 }] },
+          warm_target: { threshold_percent: 95, status: 'below',
+            warm: { requests: 2, input_tokens: 2000, cached_tokens: 1850, rate: 92.5,
+              met_requests: 1, below_requests: 1, tail_spikes: 1,
+              below_details: [{ request_seq: 2, model: 'gpt-ui', input_tokens: 1000, cached_tokens: 849, uncached_tokens: 151 }] },
+            overall: { requests: 4, input_tokens: 3000, cached_tokens: 2640, rate: 88 },
+            cold: { requests: 1, prefix_resets: 1 },
+            uncacheable: { requests: 0 },
+            unverified: { requests: 1 },
+            providers: [{ provider_key: 'ui-astra', mode: 'prefix', requests: 3, rate: 91.2 }],
+            note: '只对热请求（追加/未变前缀且缓存字段可用）按 token 加权计算；冷启动、前缀重置、不可缓存和无法核验请求单列，不删上下文、不改分母。' },
           historical_models: [{ model: 'gpt-ui', calls: 3, rate: 33.3 }],
           records: [
             { model: 'gpt-ui', lane: 'main', outcome: 'complete', cache_target_status: 'unverified', usage: { raw_cache: { state: 'missing' } }, comparison: { kind: 'append' } },
@@ -1650,6 +1660,10 @@ function lookupIds(js) {
     assert(/通道未返回缓存字段/.test(result.text) && /缓存读取0 token/.test(result.text), '未上报被混成0命中：'+result.text);
     assert(/无法计算占比1次，其中缓存字段未返回1次/.test(result.text), '缺失字段数量与无法计量数量口径混淆');
     assert(/逐请求缓存目标≥95%：达标1次，低于目标1次，无法核验1次/.test(result.text), '逐请求目标未如实显示');
+    assert(/热请求加权缓存：92\.5%（目标≥95%；热请求加权未达标）/.test(result.text), '热请求加权口径未显示');
+    assert(/整体缓存（含冷启动\/不可缓存）：88\.0%/.test(result.text), '整体缓存与热请求口径未分开');
+    assert(/冷启动1次（前缀重置1次）/.test(result.text) && /尾部尖峰1次/.test(result.text), '冷启动/重置/尾部尖峰未单列');
+    assert(/通道 ui-astra：自动前缀缓存/.test(result.text), '通道缓存模式未显示');
     assert(/低于95% · 请求#2/.test(result.text) && /94\.995%/.test(result.text), '不能把94.995%四舍五入成达标');
     assert(/历史仅在末尾追加/.test(result.text) && /第2条消息/.test(result.text), '前缀变化解释缺失');
     assert(/请求消息发生变化（可能含临时状态）/.test(result.text), '实际出站尾部变化不能直接认定持久历史被改写');

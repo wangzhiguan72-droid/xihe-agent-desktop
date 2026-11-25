@@ -4,6 +4,7 @@
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
+const { TARGET_PERCENT, summarize: summarizeCache } = require('./cache_governor');
 
 const PROCESS_KEY = crypto.randomBytes(32);
 const RUN_ID = crypto.randomBytes(8).toString('hex');
@@ -32,7 +33,7 @@ const CACHE_PATHS = {
 };
 const validCount = value => Number.isSafeInteger(value) && value >= 0;
 const count = value => validCount(value) ? value : null;
-const CACHE_TARGET_PERCENT = 95;
+const CACHE_TARGET_PERCENT = TARGET_PERCENT;
 const hash = value => crypto.createHmac('sha256', PROCESS_KEY).update(value).digest('hex');
 const asJson = value => JSON.stringify(value === undefined ? null : value);
 const bytes = value => Buffer.byteLength(value, 'utf8');
@@ -303,6 +304,7 @@ function cacheTargetStatus(row) {
 }
 function readSummary(appDir, { session_id, limit = 20 } = {}) {
   const dropped = droppedCounts.get(JSON.stringify([appDir, session_id])) || 0;
+  const emptyGov = summarizeCache([]);
   const empty = { available: false, new_requests_only: true, window_days: 7,
     truncated: dropped > 0, dropped_count: dropped,
     recording_errors: dropped, recording_status: dropped ? 'degraded' : 'ok',
@@ -310,7 +312,10 @@ function readSummary(appDir, { session_id, limit = 20 } = {}) {
     cache_reported: 0, cache_missing: 0, cache_invalid: 0, cache_conflicting: 0,
     known_rate: null, unknown_count: 0, known_input_tokens: 0, known_cached_tokens: 0,
     cache_target: { threshold_percent: CACHE_TARGET_PERCENT, status: 'unverified', met: 0,
-      below: 0, unverified: 0, below_requests: [] }, records: [] };
+      below: 0, unverified: 0, below_requests: [] },
+    cache_governor: emptyGov, warm_target: emptyGov, overall: emptyGov.overall,
+    warm: emptyGov.warm, cold: emptyGov.cold, uncacheable: emptyGov.uncacheable,
+    unverified: emptyGov.unverified, records: [] };
   try {
     if (typeof appDir !== 'string' || !path.isAbsolute(appDir)
       || typeof session_id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(session_id)) return empty;
@@ -363,6 +368,14 @@ function readSummary(appDir, { session_id, limit = 20 } = {}) {
     summary.known_rate = known_input_tokens ? +(100 * known_cached_tokens / known_input_tokens).toFixed(2) : null;
     summary.cache_target.status = summary.cache_target.below ? 'below'
       : summary.cache_target.unverified || summary.truncated ? 'unverified' : 'met';
+    const gov = summarizeCache(rows, { truncated: summary.truncated });
+    summary.cache_governor = gov;
+    summary.warm_target = gov;
+    summary.overall = gov.overall;
+    summary.warm = gov.warm;
+    summary.cold = gov.cold;
+    summary.uncacheable = gov.uncacheable;
+    summary.unverified = gov.unverified;
     summary.records = rows.slice(0, safeLimit);
     return summary;
   } catch { return empty; }

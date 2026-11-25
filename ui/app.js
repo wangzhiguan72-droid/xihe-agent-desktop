@@ -503,6 +503,7 @@ function updateCost(u) {
   $('#tCalls').textContent = u.calls || 0;
   const hit = u.prompt_tokens ? Math.round(100 * (u.cache_hit_tokens || 0) / u.prompt_tokens) : 0;
   $('#tHit').textContent = hit + '%';
+  $('#tHit').title = '全量缓存占比，含冷启动、视觉和未上报缓存字段的请求；热请求≥95%的达标口径见缓存诊断。';
   $('#tVision').textContent = u.vision_calls || 0;
   // Historical per-model totals require reading the ledger. Refresh on open,
   // explicit action, or session switch, rather than on every usage event.
@@ -587,6 +588,36 @@ async function refreshCacheDiagnostics() {
   }
   line('最近' + (report.window_days || 7) + '天新增诊断：' + report.requests + '次HTTP请求；无法计算占比' + report.unknown_count + '次，其中缓存字段未返回' + (report.cache_missing || 0) + '次。');
   line('已上报部分的缓存命中率：' + (report.known_rate == null ? '暂无' : report.known_rate.toFixed(1) + '%') + '（按输入token加权）');
+  const warmTarget = report.warm_target;
+  if (warmTarget) {
+    const warm = warmTarget.warm || report.warm || {};
+    const overall = warmTarget.overall || report.overall || {};
+    const cold = warmTarget.cold || report.cold || {};
+    const uncacheable = warmTarget.uncacheable || report.uncacheable || {};
+    const unverified = warmTarget.unverified || report.unverified || {};
+    const verdict = warmTarget.status === 'met' ? '热请求加权已达标'
+      : warmTarget.status === 'below' ? '热请求加权未达标' : '热请求加权无法核实';
+    line('热请求加权缓存：' + (warm.rate == null ? '暂无' : warm.rate.toFixed(1) + '%')
+      + '（目标≥' + warmTarget.threshold_percent + '%；' + verdict + '）', 'cache-warm-target');
+    line('整体缓存（含冷启动/不可缓存）：' + (overall.rate == null ? '暂无' : overall.rate.toFixed(1) + '%')
+      + '；热请求' + (warm.requests || 0) + '次，单请求≥95% ' + (warm.met_requests || 0)
+      + '次、低于95% ' + (warm.below_requests || 0) + '次。');
+    line('冷启动' + (cold.requests || 0) + '次（前缀重置' + (cold.prefix_resets || 0) + '次）'
+      + ' · 不可缓存' + (uncacheable.requests || 0) + '次 · 无法核验' + (unverified.requests || 0)
+      + '次 · 尾部尖峰' + (warm.tail_spikes || 0) + '次。');
+    for (const p of warmTarget.providers || []) {
+      const mode = p.mode === 'prefix' ? '自动前缀缓存' : p.mode === 'explicit' ? '显式断点缓存'
+        : p.mode === 'unknown' ? '未声明缓存能力' : '无缓存';
+      line('通道 ' + p.provider_key + '：' + mode + ' · ' + p.requests + '次 · 缓存'
+        + (p.rate == null ? '未知' : p.rate.toFixed(1) + '%'));
+    }
+    for (const low of warm.below_details || []) {
+      line('热请求低于95% · 请求#' + low.request_seq + ' · ' + low.model + ' · 缓存'
+        + low.cached_tokens + '/' + low.input_tokens + ' token（未缓存尾部'
+        + low.uncached_tokens + ' token，含新工具结果/回复）');
+    }
+    line(warmTarget.note);
+  }
   const target = report.cache_target;
   if (target) {
     const verdict = target.status === 'met' ? '当前已采集记录全部达标'
@@ -894,6 +925,14 @@ function handleEvent(ev, st) {
     }
     case 'compact_done': {
       const c = document.createElement('div'); c.className = 'compact'; c.textContent = `🗜 历史已压缩，保留 ${ev.kept} 条`;
+      $('#chatStream').appendChild(c); scrollBottom();
+      break;
+    }
+    case 'cache_reset': {
+      const c = document.createElement('div'); c.className = 'sysnote';
+      c.textContent = ev.kind === 'compact'
+        ? `♻ 缓存重置：历史压缩${ev.detail ? '（' + ev.detail + '）' : ''}；下一请求按冷启动计，原文可追溯`
+        : `♻ 缓存前缀重置：${ev.reason}（${ev.from} → ${ev.to}）；上下文未删减，本次按冷启动计`;
       $('#chatStream').appendChild(c); scrollBottom();
       break;
     }
