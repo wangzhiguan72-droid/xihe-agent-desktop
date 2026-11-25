@@ -37,13 +37,17 @@ npm run calibrate:jev  # Jev 校准汇总（零 API 调用，只读本机决策�
 
 国内网络可使用仓库内的 `.npmrc`（npmmirror 镜像）。
 
+> 网页搜索运行时（`vendor/open-webSearch`，约 117 MB）不随仓库分发，便携包内仍随包带上。
+> 源码运行首次需还原：`node scripts/fetch-open-websearch.js --from <zip|目录>` 或 `--url <地址> --sha256 <hex>`。
+> 未安装时只有 `web_search` 报"组件未安装"，其余功能不受影响；也可在 `config/settings.json` 里用 `websearch.daemon_dir` 指向现成目录。
+
 ## 首次配置
 
 设置页支持常见提供商，也可添加自定义 OpenAI 兼容端点。`config/settings.example.json` 是字段示例，复制为 `config/settings.json` 后按需修改；界面保存时会自动生成该文件。
 
 - 密钥不写入 `settings.json`，单独存放在 `config/*.key`。
 - `kb_roots` 填自己的资料目录；留空则只使用内置知识。
-- 网页搜索默认使用随包 `vendor/open-webSearch`，首次调用时自动拉起本地守护进程。
+- 网页搜索默认使用随包 `vendor/open-webSearch`，首次调用时自动拉起本地守护进程。源码运行时该目录需用 `scripts/fetch-open-websearch.js` 还原，或让 `websearch.daemon_dir` 指向别处。
 - 判断层（Jev）默认关闭，是否启用、何时触发、置信度门槛、交换顺序双评都在设置页自选；`npm run calibrate:jev` 用本机人工最终选择生成校准报告，帮助判断门槛是否合理，不发起任何 API 调用。
 - 技能首检质检默认关闭；启用后可指定质检模型（留空跟随重装模型），技能面板可查看结论、重新质检、跳过此版本或确认后生成修复副本。关闭时不产生任何质检调用，也不注入质检警告。
 

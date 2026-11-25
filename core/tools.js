@@ -2827,10 +2827,25 @@ async function owsHealth(base, ms = 3000) {
   } catch { return false; }
 }
 
+// 组件目录不随 git 分发；便携包内仍带 vendor/open-webSearch，源码运行需先安装。
+function owsInstalledDir(ctx) {
+  const s = owsSettings(ctx);
+  const dirs = [];
+  if (s.daemon_dir) dirs.push(String(s.daemon_dir));
+  dirs.push(path.join(APP_PATHS.APP_DIR, 'vendor', 'open-webSearch'));
+  dirs.push(path.join(APP_PATHS.DATA_DIR, 'vendor', 'open-webSearch'));
+  return dirs.find(d => {
+    try { return fs.statSync(path.join(d, 'build', 'index.js')).isFile(); } catch { return false; }
+  }) || '';
+}
+
+function owsInstallHint() {
+  return `网页搜索组件未安装：把 vendor/open-webSearch 放到 ${path.join(APP_PATHS.DATA_DIR, 'vendor', 'open-webSearch')}，或运行 node scripts/fetch-open-websearch.js --from <zip|目录>；也可在 config/settings.json 配 websearch.daemon_dir。`;
+}
+
 function ensureOwsDaemon(ctx) {
   const s = owsSettings(ctx);
-  // 发行版自带 open-webSearch；用户显式配置的 daemon_dir 优先。
-  const dir = String(s.daemon_dir || path.join(APP_PATHS.APP_DIR, 'vendor', 'open-webSearch'));
+  const dir = owsInstalledDir(ctx);
   if (!dir) return Promise.resolve(false);
   const port = s.port || OWS_DEFAULT_PORT;
   if (_owsSpawnByPort.has(port)) return _owsSpawnByPort.get(port);
@@ -2863,7 +2878,7 @@ async function tWebSearch(ctx, a) {
   if (!(await owsHealth(base))) {
     const started = await ensureOwsDaemon(ctx);
     if (!started || !(await owsHealth(base))) {
-      throw new Error(`open-websearch daemon 不可达（${base}）。手动起：cd <open-webSearch> && node build/index.js serve --port ${s.port || OWS_DEFAULT_PORT}；或在 config/settings.json 配 websearch.daemon_dir 实现自动拉起`);
+      throw new Error(`open-websearch daemon 不可达（${base}）。${owsInstallHint()} 手动起：cd <目录> && node build/index.js serve --port ${s.port || OWS_DEFAULT_PORT}`);
     }
   }
   const engines = (Array.isArray(a.engines) && a.engines.length ? a.engines.map(String) : null)

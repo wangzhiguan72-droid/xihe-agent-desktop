@@ -92,6 +92,9 @@ function zipStage() {
 if (!fs.existsSync(path.join(ELECTRON_DIST, 'electron.exe'))) {
   throw new Error('未找到 Electron 运行时。先运行 npm install，或用 --electron-dist 指向 electron/dist 目录。');
 }
+if (!fs.existsSync(path.join(ROOT, 'vendor', 'open-webSearch', 'build', 'index.js'))) {
+  throw new Error('未找到 vendor/open-webSearch（网页搜索运行时已不随 git 分发）。先运行 node scripts/fetch-open-websearch.js --from <zip|目录> 或 --url <地址>。');
+}
 
 fs.mkdirSync(OUT, { recursive: true });
 fs.rmSync(STAGE, { recursive: true, force: true });

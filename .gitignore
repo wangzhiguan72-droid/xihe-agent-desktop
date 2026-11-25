@@ -1,5 +1,7 @@
 # 依赖与构建产物（vendor 内随包 node_modules 需要提交，不能用全局 node_modules 规则）
 /node_modules/
+# 117 MB 网页搜索运行时：不进 git，便携包仍随包带上；源码运行用 scripts/fetch-open-websearch.js 还原
+/vendor/open-webSearch/
 /dist*/
 /release/
 /.git/
