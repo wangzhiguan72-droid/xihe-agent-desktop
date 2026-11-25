@@ -1,9 +1,10 @@
 'use strict';
 // 还原 vendor/open-webSearch（约 117 MB 的网页搜索运行时，不随 git 分发）。
 // 用法：
+//   node scripts/fetch-open-websearch.js                # 从固定 Release 地址下载并校验
 //   node scripts/fetch-open-websearch.js --from <zip|目录> [--dest <目录>] [--force]
 //   node scripts/fetch-open-websearch.js --url <https地址> [--sha256 <hex>] [--dest <目录>] [--force]
-// 不带参数时只检查现有安装。便携包构建读取本目录，最终用户无需运行本脚本。
+// 不带参数且已安装时只做检查。便携包构建读取本目录，最终用户无需运行本脚本。
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -12,6 +13,12 @@ const { spawnSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const DEST = path.resolve(opt('--dest') || path.join(ROOT, 'vendor', 'open-webSearch'));
+// 组件包只含 Windows x64 依赖（node_modules 为本机安装产物）。
+const PINNED_PACK = {
+  version: '2.1.11',
+  url: 'https://github.com/wangzhiguan72-droid/xihe-agent-desktop/releases/download/data-openwebsearch-2.1.11/open-websearch-2.1.11-win-x64.zip',
+  sha256: 'd750ff6c2685381c8c89bebc085fa569cd6dfb51b78d3b30e451cf6fda7fc3d8',
+};
 
 function opt(name) {
   const i = process.argv.indexOf(name);
@@ -107,9 +114,26 @@ function installFrom(src) {
   }
 }
 
+async function downloadZip(url, wantSha) {
+  const tmp = path.join(os.tmpdir(), `open-websearch-${Date.now()}.zip`);
+  try {
+    await download(url, tmp);
+    const got = sha256(tmp);
+    if (wantSha && got !== wantSha) {
+      fail(`SHA-256 不匹配\n期望 ${wantSha}\n实际 ${got}`);
+    }
+    console.log(`SHA-256 ${got}`);
+    return tmp;
+  } catch (err) {
+    fs.rmSync(tmp, { force: true });
+    throw err;
+  }
+}
+
 (async () => {
   if (flag('--help') || flag('-h')) {
-    console.log('用法：node scripts/fetch-open-websearch.js --from <zip|目录> | --url <https地址> [--sha256 <hex>] [--dest <目录>] [--force]');
+    console.log('用法：node scripts/fetch-open-websearch.js [--from <zip|目录> | --url <https地址> [--sha256 <hex>]] [--dest <目录>] [--force]');
+    console.log('不带参数：已安装则检查，未安装则从固定 Release 组件包下载并校验。');
     return;
   }
   const from = opt('--from');
@@ -117,9 +141,17 @@ function installFrom(src) {
   const wantSha = (opt('--sha256') || '').toLowerCase();
 
   if (!from && !url) {
-    if (!fs.existsSync(DEST)) fail(`未安装：${DEST}\n用 --from <zip|目录> 或 --url <地址> 安装。`);
-    const { version } = validate(DEST);
-    console.log(`已安装 open-webSearch ${version} → ${DEST}`);
+    if (fs.existsSync(DEST)) {
+      const { version } = validate(DEST);
+      console.log(`已安装 open-webSearch ${version} → ${DEST}`);
+      return;
+    }
+    if (process.platform !== 'win32') {
+      fail('内置组件包只含 Windows x64 依赖。请在有安装的机器上打包整个目录，再用 --from <目录|zip> 还原。');
+    }
+    console.log(`未安装，从 Release 组件包下载 ${PINNED_PACK.version}…`);
+    const tmp = await downloadZip(PINNED_PACK.url, PINNED_PACK.sha256);
+    try { installFrom(tmp); } finally { fs.rmSync(tmp, { force: true }); }
     return;
   }
   if (from && url) fail('--from 与 --url 只能二选一');
@@ -132,14 +164,6 @@ function installFrom(src) {
     return;
   }
 
-  const tmp = path.join(os.tmpdir(), `open-websearch-${Date.now()}.zip`);
-  try {
-    await download(url, tmp);
-    const got = sha256(tmp);
-    if (wantSha && got !== wantSha) fail(`SHA-256 不匹配\n期望 ${wantSha}\n实际 ${got}`);
-    console.log(`SHA-256 ${got}`);
-    installFrom(tmp);
-  } finally {
-    fs.rmSync(tmp, { force: true });
-  }
+  const tmp = await downloadZip(url, wantSha);
+  try { installFrom(tmp); } finally { fs.rmSync(tmp, { force: true }); }
 })().catch(err => fail(err && err.stack || String(err)));

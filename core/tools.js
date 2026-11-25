@@ -2840,7 +2840,7 @@ function owsInstalledDir(ctx) {
 }
 
 function owsInstallHint() {
-  return `网页搜索组件未安装：把 vendor/open-webSearch 放到 ${path.join(APP_PATHS.DATA_DIR, 'vendor', 'open-webSearch')}，或运行 node scripts/fetch-open-websearch.js --from <zip|目录>；也可在 config/settings.json 配 websearch.daemon_dir。`;
+  return `网页搜索组件未安装：运行 node scripts/fetch-open-websearch.js（默认从 Release 下载 Windows x64 包并校验 SHA-256），或把组件放到 ${path.join(APP_PATHS.DATA_DIR, 'vendor', 'open-webSearch')}；也可在 config/settings.json 配 websearch.daemon_dir。`;
 }
 
 function ensureOwsDaemon(ctx) {

@@ -38,8 +38,10 @@ npm run calibrate:jev  # Jev 校准汇总（零 API 调用，只读本机决策�
 国内网络可使用仓库内的 `.npmrc`（npmmirror 镜像）。
 
 > 网页搜索运行时（`vendor/open-webSearch`，约 117 MB）不随仓库分发，便携包内仍随包带上。
-> 源码运行首次需还原：`node scripts/fetch-open-websearch.js --from <zip|目录>` 或 `--url <地址> --sha256 <hex>`。
-> 未安装时只有 `web_search` 报"组件未安装"，其余功能不受影响；也可在 `config/settings.json` 里用 `websearch.daemon_dir` 指向现成目录。
+> 源码运行首次需还原：`node scripts/fetch-open-websearch.js`（从 GitHub Release 组件包下载并校验 SHA-256）。
+> 组件包：https://github.com/wangzhiguan72-droid/xihe-agent-desktop/releases/download/data-openwebsearch-2.1.11/open-websearch-2.1.11-win-x64.zip
+> SHA-256：`d750ff6c2685381c8c89bebc085fa569cd6dfb51b78d3b30e451cf6fda7fc3d8`
+> 未安装时只有 `web_search` 报"组件未安装"，其余功能不受影响；离线或非 Windows 用 `--from <zip|目录>`，也可用 `websearch.daemon_dir` 指向现成目录。
 
 ## 首次配置
 
